@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "compile": "gulp compile",
-    "dev": "gulp dev"
+    "dev": "gulp dev",
+    "dist": "gulp dist"
   },
   "author": "YH",
   "license": "ISC",

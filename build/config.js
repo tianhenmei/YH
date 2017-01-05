@@ -12,7 +12,7 @@ function getConfig(systemName,name){
             ]
         },
         output: {
-            path: path.resolve(__dirname,'../dist',systemName),//path.resolve(__dirname, `../dist/${systemName}/js/`),
+            path: path.resolve(__dirname,'../dist',systemName+'/js/'),//path.resolve(__dirname, `../dist/${systemName}/js/`),
             publicPath: '/',
             filename: name+'.js',//'[name].[hash].js',
             // chunkFilename: name+'.js'//'[id].[chunkhash].js'

@@ -38,6 +38,9 @@ var config = {
             },{
                 test: /\.woff|\.eot|\.svg|\.ttf|\.png|\.jpg|\.gif|\.jpeg/,
                 loader: 'url-loader'
+            },{ 
+                test: /\.css$/, 
+                loader: "style!css" 
             }]
     },
     vue:{

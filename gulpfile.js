@@ -103,11 +103,11 @@ gulp.task('dev:server',function(){
     })
     // 使用 webpack-hot-middleware 中间件
     var hotMiddleware = webpackHot(compiler)
-    var mfs = new MemoryFileSystem()
-    let fileDir = path.join(serverConfig.output.path)
-    !fs.existsSync(fileDir) && mkdirp(fileDir, function(err) {
-        if (err) console.error(err)
-    })
+    // var mfs = new MemoryFileSystem()
+    // let fileDir = path.join(serverConfig.output.path)
+    // !fs.existsSync(fileDir) && mkdirp(fileDir, function(err) {
+    //     if (err) console.error(err)
+    // })
     // webpack插件，监听html文件改变事件
     compiler.plugin('compilation', function (compilation) {
         compilation.plugin('html-webpack-plugin-after-emit', function (data, cb) {
@@ -116,15 +116,15 @@ gulp.task('dev:server',function(){
             cb()
         })
     })
-    compiler.outputFileSystem = mfs
-    compiler.watch({}, function(err, stats) {
-        if(err) {
-            return console.log(chalk.red(err.message))
-        }
-        let filePath = path.join(serverConfig.output.path,serverConfig.output.filename)
-        let reader = mfs.createReadStream(filePath)
-        reader.pipe(fs.createWriteStream(filePath))
-    })
+    // compiler.outputFileSystem = mfs
+    // compiler.watch({}, function(err, stats) {
+    //     if(err) {
+    //         return console.log(chalk.red(err.message))
+    //     }
+    //     let filePath = path.join(serverConfig.output.path,serverConfig.output.filename)
+    //     let reader = mfs.createReadStream(filePath)
+    //     reader.pipe(fs.createWriteStream(filePath))
+    // })
     // 注册中间件
     app.use(devMiddleware)
     app.use(hotMiddleware)
@@ -139,3 +139,29 @@ gulp.task('dev:server',function(){
 });
 
 gulp.task('dev',['dev:client', 'dev:server']);
+
+
+gulp.task('dist',function(callback){
+    var systemName = params.dist.sys
+    if(!systemName) return
+
+    var serverConfig = Object.assign({},getConfig(systemName,'index'),{
+        plugins:[
+            new webpack.optimize.UglifyJsPlugin({
+                compress: {
+                    warnings: false
+                },
+                output: {
+                    comments: false,
+                }
+            })
+        ]
+    });
+    let fileDir = path.join(serverConfig.output.path)
+    !fs.existsSync(fileDir) && mkdirp(fileDir, function(err) {
+        if (err) console.error(err)
+    })
+    webpack(serverConfig, function(err, stats) {
+        callback();
+    });
+});
