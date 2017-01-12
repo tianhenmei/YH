@@ -4,6 +4,7 @@
 
 var express = require('express');
 var fs = require('fs');
+var path = require('path');
 var querystring = require('querystring');
 var bodyParser = require('body-parser');
 //var babel = require('babel-core/register');
@@ -13,40 +14,28 @@ var router = express.Router();
 var mysql = require("./mysql.js");
 var teacher_control = require('./teacher-control.js');
 var vue_server = require('./vue-server.js');
+var system_control = require('./system-control.js');
+var editor_control = require('./editor-control.js');
 
 
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded());
 //router.use(express.static('public'));  //多次调用 express.static 中间件
 router.use('/static',express.static('public'));  // 指定挂载路径（虚拟）
-router.use('/works/teacher',teacher_control);
-router.use('/vue',vue_server);
+router.use('/yh',express.static('publish')); // 指定挂载路径（虚拟）
+// router.use('/works/teacher',teacher_control);
+// router.use('/vue',vue_server);
+// router.use('/dist',system_control);
+router.use('/editor',editor_control);
 
 router.get('/',function(req,res){
-    var html = getFile(req);
-
+    var html = getFile(req,res);
     res.send(html);
-    /*
-     data = {
-         filename:'',
-         options:{
-             root:root+'/template/vue',
-             dotfile:'deny',
-             headers:{
-                 'x-timestamp':Date.now(),
-                 'x-sent':true
-             }
-         }
-     },
-    res.sendFile(data.filename,data.options,function(err){
-        if(err){
-            console.log(err);
-            res.status(err.status).end();
-        }else{
-            console.log('Sent: ',filename);
-        }
-    })*/
 });
+// router.get('/yh/*',function(req,res){
+//     var html = getFile(req,res);
+//     res.send(html);
+// });
 
 router.param('file',function(req,res,next,id){
     console.log('CALLED WORKS: '+id);
@@ -54,7 +43,7 @@ router.param('file',function(req,res,next,id){
 });
 
 router.get('/works/:file',function(req,res){
-    var html = getFile(req);
+    var html = getFile(req,res);
 
     res.send(html);
 });
@@ -174,25 +163,37 @@ router.post('/works/api/login',function(req,res){
 
 
 
-function getFile(req){
+function getFile(req,res){
     var root = __dirname.split('/').slice(0,-1).join('/'),
         data = {
             filename:'',
-            root:root+'/template/vue',
+            root:root+(req.url.indexOf('/yh/')!= -1 ? '' : '/template/vue'),
             options:{
-                encoding:'utf-8'
+                encoding:'utf-8',
+                // headers:{
+                //     'x-timestamp':Date.now(),
+                //     'x-sent':true
+                // }
             }
         },
         html = '';
-
+    
     switch(req.url){
         case '/':
             data.filename = data.root+'/main.html';
             break;
         default:
-            data.filename = data.root+req.url;
+            data.filename = data.root+req.url.replace('/yh/','/publish/');
             break;
     }
+    // res.sendFile(data.filename,options,function(err){
+    //     if(err){
+    //         console.log(err);
+    //         res.status(err.status).end();
+    //     }else{
+    //         console.log('Sent: ',filename);
+    //     }
+    // })
     console.log(data.filename);
     html = fs.readFileSync(data.filename,data.options);
     return html;
