@@ -103,6 +103,8 @@ class Drag{
         var self = this
         var body = $('body')
         this.outer.on('mousedown',this.elemPath,function(e){
+            e.stopPropagation();
+
             self.elem = $(this);
             if(!self.move_box){
                 self.move_box = self.elem;

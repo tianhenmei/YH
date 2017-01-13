@@ -57,9 +57,10 @@
         data(){
             return {
                 pages:[{
-                        elements:[{
+                        elements:[/*{
                             yh_id:'element0',
                             yh_module:YHImage,
+                            module:'image',
                             props:{
                                 id:'element0',
                                 style:{
@@ -73,7 +74,7 @@
                                 src:'http://localhost:9000/static/images/Helen.png',
                                 href:''
                             }
-                        }],
+                        }*/],
                         background:{
                             backgroundColor:'transparent',
                             backgroundImage:'',
@@ -91,7 +92,6 @@
         },
         created(){
             var that = this;
-            that.getPageData('10002');
             MW.bus.$on('addChild',name => {
                 that.addChild(name);
             });
@@ -103,6 +103,7 @@
             })
         },
         mounted(){
+            this.getPageData('10002',this);
             this.init()
         },
         methods:{
@@ -185,6 +186,7 @@
                             self.settingBox(elem);
                         };
 
+                        self.pages[self.currentPage].elements[index].props.src = img.src;
                         self.pages[self.currentPage].elements[index].props.style.width = self.getRem(data.content.width);
                         self.pages[self.currentPage].elements[index].props.style.height = self.getRem(data.content.height);
                     },
@@ -218,14 +220,16 @@
                 var elemID = elem.attr('id'),
                     index = this.getIndex(elemID,this);
                 
-                var self = this;
+                var self = this,
+                    xx = self.toRem(x - distance),
+                    yy = self.toRem(y - distance);
                 elem.css({
-                    'left':self.toRem(x - distance),
-                    'top':self.toRem(y - distance)
+                    'left':xx,
+                    'top':yy
                 });
                 
-                self.pages[self.currentPage].elements[index].props.position.left = x - distance;
-                self.pages[self.currentPage].elements[index].props.position.top = y - distance;
+                self.pages[self.currentPage].elements[index].props.position.left = xx;
+                self.pages[self.currentPage].elements[index].props.position.top = yy;
                 
                 move_box.css({
                     'display':'none'
@@ -279,6 +283,7 @@
                 this.pages[this.currentPage].elements.push({
                     yh_id:elemID,
                     yh_module:Elements[name],
+                    module:name.split('-')[1],
                     props:Elements[name].initCtor({id:elemID},this)
                 });
             },
@@ -294,13 +299,42 @@
 
 
 
-            getPageData(templateID){
+            getPageData(templateID,self){
                 $.ajax({
                     type:'post',
-                    url:'/editor/getPageData',
-                    data:templateID,
-                    success:function(data){
-
+                    url:'http://localhost:9000/editor/getPageData',
+                    data:{
+                        id:templateID
+                    },
+                    success:function(result){
+                        var data = JSON.parse(result.content.json);
+                        self.pages = [];
+                        self.count = data.count;
+                        for(let i = 0; i < data.pages.length; i++){
+                            self.pages.push(JSON.parse(JSON.stringify(data.pages[i])));
+                            for(let j = 0; j < self.pages[i].elements.length; j++){
+                                switch(self.pages[i].elements[j].module){
+                                    case 'image':
+                                        self.pages[i].elements[j].yh_module = YHImage;
+                                        break;
+                                    case 'text':
+                                        self.pages[i].elements[j].yh_module = YHText;
+                                        break;
+                                    case 'button':
+                                        self.pages[i].elements[j].yh_module = YHButton;
+                                        break;
+                                    case 'form':
+                                        self.pages[i].elements[j].yh_module = YHForm;
+                                        break;
+                                    case 'audio':
+                                        self.pages[i].elements[j].yh_module = YHAudio;
+                                        break;
+                                    case 'video':
+                                        self.pages[i].elements[j].yh_module = YHVideo;
+                                        break;
+                                }
+                            }
+                        }
                     },
                     error:function(error){
                         console.log(error.message);
@@ -329,6 +363,7 @@
                         name:'test',
                         style:style,
                         html:totalElement.html(),
+                        json:JSON.stringify(this.$data).replace('\'','’'),
                         author:'yh'
                     },
                     success(data){

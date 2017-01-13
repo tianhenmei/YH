@@ -67,6 +67,30 @@ router.post('/save',function(req,res){
     });
 });
 
+router.post('/getPageData',function(req,res){
+    var templateID = req.body.id ? req.body.id : 0,
+        querey_string = 'select * from pages WHERE id='+templateID,
+        pageString = '';
+    mysql.query(querey_string,function(err,rows,fields){
+        if(err){
+            throw err;
+        }
+        if(rows && rows.length > 0){
+            res.json({
+                state:200,
+                success:true,
+                content:rows[0]
+            });
+        }else{
+            res.json({
+                state:200,
+                success:true,
+                content:{}
+            });
+        }
+    });
+});
+
 router.post('/upload',function(req,res){
     //生成multiparty对象，并配置上传目标路径
     var form = new multiparty.Form({uploadDir: './public/files/'});
@@ -121,6 +145,7 @@ function setFile(page){
     mkdirsSync('publish/'+page.name+'/css','0777');
     writeFile('publish/'+page.name+'/js/index.js',page.js ? page.js : '')
     writeFile('publish/'+page.name+'/css/index.css',page.style ? page.style : '')
+    writeFile('publish/'+page.name+'/index.json',page.json ? page.json : '')
     writeFile('publish/'+page.name+'/index.html',''+
         '<!DOCTYPE html>'+'\n'+
         '<html lang="zh">'+'\n'+
