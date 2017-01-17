@@ -87,6 +87,23 @@
     top:50%;
     margin:-5px 0 0 -5px;
 }
+.yh-selectTop p.rotate {
+    border-radius:10px;
+    left:50%;
+    top:-24px;
+    margin:0 0 0 -5px;
+    cursor: pointer;
+}
+.yh-selectTop p.rotate:after {
+    width: 2px;
+    height: 20px;
+    content: "";
+    background: #ff0084;
+    position: absolute;
+    left: 50%;
+    top: 0;
+    margin: 0 0 0 -1px;
+}
 .yh-selectLeft p.center,.yh-selectRight p.center {
     left:50%;
     top:50%;

@@ -140,6 +140,8 @@ class Drag{
                     'height':self.data.height+'px',
                     'left':(self.data.left + self.distance) + 'px',
                     'top':(self.data.top + self.distance) +'px',
+                    '-webkit-transform':'rotateZ(0deg)',
+                    'transform':'rotateZ(0deg)',
                     'display':'block'
                 });
                 self.end.x = self.data.left + self.distance;

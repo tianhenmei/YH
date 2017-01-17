@@ -24,8 +24,8 @@
     }
     1%,100% { opacity:1; }
     100% { 
-        -webkit-transform:rotateZ(0deg);
-        transform:rotateZ(0deg);
+        /*-webkit-transform:rotateZ(0deg);
+        transform:rotateZ(0deg);*/
     }
 }
 @keyframes yhRotate {
@@ -36,8 +36,8 @@
     }
     1%,100% { opacity:1; }
     100% { 
-        -webkit-transform:rotateZ(0deg);
-        transform:rotateZ(0deg);
+        /*-webkit-transform:rotateZ(0deg);
+        transform:rotateZ(0deg);*/
     }
 }
 

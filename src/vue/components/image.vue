@@ -1,7 +1,7 @@
 <template>
     <div :id="props.id" :style="props.position" :class="props.classname" kitty-image>
         <div class="kitty-image-content">
-            <img class="yh-image" :src="props.src" :style="props.style" />
+            <img class="yh-image" :src="props.src" :style="props.style" rotate />
             <a :class="{'yh-image-href':props.href}" :href="props.href"></a>
         </div>
         <div class="yh-edit-layer">
@@ -43,7 +43,9 @@
                 },
                 position:{
                     left:0,
-                    top:0
+                    top:0,
+                    webkitTransform:'none',
+                    transform:'none'
                 },
                 src:options.src ? options.src : 'http://localhost:9000/static/images/Helen.png',
                 href:options.href ? options.href : '',

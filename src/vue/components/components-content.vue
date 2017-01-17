@@ -24,6 +24,7 @@
 
             <div class="yh-selectTop yh-selection">
                 <p class="center"></p>
+                <p class="rotate"></p>
                 <p></p>
             </div>
             <div class="yh-selectRight yh-selection">
@@ -225,7 +226,8 @@
             initSizeChangeEvent(){
                 let selectP = $('.yh-selection')
                 let body = $('body')
-                let move_box = $('#yh-move-box')
+                let move_box = $('#yh-move-box'),
+                    contentCenter = $('.yh-content-center')
                 let down = false,
                     isMoving = false,
                     elem = null,
@@ -240,11 +242,16 @@
                         width:0,
                         height:0,
                         left:0,
-                        top:0
+                        top:0,
+                        transform
                     },
                     start = { x:0, y:0 },
+                    center = { x:0, y:0 },
                     end = { x:0, y:0 },
                     distance = 15,
+                    transform = 0,
+                    oangle = 0,
+                    angle = 0,
                     self = this,
                     type = ''
 
@@ -258,32 +265,42 @@
                     data.height = self.getPointOuterHeight(elem)
                     data.left = self.getPointValue(elem,'left') + distance
                     data.top = self.getPointValue(elem,'top') + distance
+                    center.x = data.width / 2 + data.left + contentCenter.offset().left
+                    center.y = data.height / 2 + data.top + contentCenter.offset().top
+
+                    transform = elem.find('[rotate]').css('transform')
+                    oangle = transform == 'none' ? 0 : eval('self.get'+transform)
 
                     let parent = $(this).parent(),
                         isCenter = $(this).hasClass('center')
-                    if(parent.hasClass('yh-selectTop')){
-                        if(isCenter){
-                            type = 'top'
-                        }else{
-                            type = 'lt'  // 左上角
-                        }
-                    }else if(parent.hasClass('yh-selectBottom')){
-                        if(isCenter){
-                            type = 'bottom'
-                        }else{
-                            type = 'rb'  // 右下角
-                        }
-                    }else if(parent.hasClass('yh-selectLeft')){
-                        if(isCenter){
-                            type = 'left'
-                        }else{
-                            type = 'lb'  // 左下角
-                        }
-                    }else if(parent.hasClass('yh-selectRight')){
-                        if(isCenter){
-                            type = 'right'
-                        }else{
-                            type = 'rt'  // 右上角
+
+                    if($(this).hasClass('rotate')){
+                        type = 'rotate'
+                    }else{
+                        if(parent.hasClass('yh-selectTop')){
+                            if(isCenter){
+                                type = 'top'
+                            }else{
+                                type = 'lt'  // 左上角
+                            }
+                        }else if(parent.hasClass('yh-selectBottom')){
+                            if(isCenter){
+                                type = 'bottom'
+                            }else{
+                                type = 'rb'  // 右下角
+                            }
+                        }else if(parent.hasClass('yh-selectLeft')){
+                            if(isCenter){
+                                type = 'left'
+                            }else{
+                                type = 'lb'  // 左下角
+                            }
+                        }else if(parent.hasClass('yh-selectRight')){
+                            if(isCenter){
+                                type = 'right'
+                            }else{
+                                type = 'rt'  // 右上角
+                            }
                         }
                     }
                 })
@@ -296,6 +313,8 @@
                                 'height':data.height+'px',
                                 'left':data.left + 'px',
                                 'top':data.top +'px',
+                                '-webkit-transform':'rotateZ(0deg)',
+                                'transform':'rotateZ(0deg)',
                                 'display':'block'
                             });
                         }
@@ -352,6 +371,14 @@
                                     'top':(data.top + end.y - start.y) +'px'
                                 })
                                 break;
+                            case 'rotate':  // 旋转
+                                angle = (self.getAngle(center.x,center.y,end.x,end.y) + oangle) % 360
+                                
+                                move_box.css({
+                                    '-webkit-transform':'rotateZ('+angle+'deg)',
+                                    'transform':'rotateZ('+angle+'deg)'
+                                })
+                                break;
                         }
                     }
                 })
@@ -361,6 +388,7 @@
                         last.height = self.getPointOuterHeight(move_box)
                         last.left = self.getPointValue(move_box,'left') - distance
                         last.top = self.getPointValue(move_box,'top') - distance
+                        last.transform = move_box.css('transform')
 
                         let index = self.getIndex(elemID,self)
 
@@ -368,6 +396,8 @@
                         self.pages[self.currentPage].elements[index].props.style.height = self.toRem(last.height);
                         self.pages[self.currentPage].elements[index].props.position.left = self.toRem(last.left);
                         self.pages[self.currentPage].elements[index].props.position.top = self.toRem(last.top);
+                        self.pages[self.currentPage].elements[index].props.style.webkitTransform = last.transform
+                        self.pages[self.currentPage].elements[index].props.style.transform = last.transform
                         MW.isMoving = true
                         self.distance = 0
                         self.settingBox(move_box)
@@ -378,6 +408,60 @@
                     down = false
                     isMoving = false
                 })
+            },
+            /* 
+            * 解析matrix矩阵，0°-360°，返回旋转角度 
+            * 当a=b||-a=b,0<=deg<=180 
+            * 当-a+b=180,180<=deg<=270 
+            * 当a+b=180,270<=deg<=360 
+            * 
+            * 当0<=deg<=180,deg=d; 
+            * 当180<deg<=270,deg=180+c; 
+            * 当270<deg<=360,deg=360-(c||d); 
+            * */  
+            getmatrix(a,b,c,d,e,f){  
+                var aa = Math.round(180*Math.asin(a)/ Math.PI);  
+                var bb = Math.round(180*Math.acos(b)/ Math.PI);  
+                var cc = Math.round(180*Math.asin(c)/ Math.PI);  
+                var dd = Math.round(180*Math.acos(d)/ Math.PI);  
+                var deg=0;  
+                if(aa == bb || -aa == bb){  
+                    deg = dd;  
+                }else if(-aa + bb == 180){  
+                    deg = 180 + cc;  
+                }else if(aa + bb == 180){  
+                    deg = 360 - cc || 360 - dd;  
+                }  
+                return deg >= 360 ? 0 : deg;  
+                //return (aa+','+bb+','+cc+','+dd);  
+            },
+            getAngle(centerX,centerY,clientX,clientY){
+                var x = Math.abs(centerX - clientX );
+                var y = Math.abs(centerY - clientY);
+                var z = Math.sqrt(Math.pow(x,2)+Math.pow(y,2));
+                var cos = y / z;
+                var radina = Math.acos(cos);//用反三角函数求弧度
+                var angle = Math.floor(180/(Math.PI/radina));//将弧度转换成角度
+
+                if( clientX > centerX && clientY > centerY ){//鼠标在第四象限
+                    angle = 180 - angle;
+                }
+                if( clientX == centerX && clientY > centerY ){//鼠标在y轴负方向上
+                    angle = 180;
+                }
+                if( clientX > centerX && clientY == centerY ){//鼠标在x轴正方向上
+                    angle = 90;
+                }
+                if( clientX < centerX && clientY > centerY ){//鼠标在第三象限
+                    angle = 180+angle;
+                }
+                if( clientX < centerX && clientY == centerY ){//鼠标在x轴负方向
+                    angle = 270;
+                }
+                if( clientX < centerX && clientY < centerY ){//鼠标在第二象限
+                    angle = 360 - angle;
+                }
+                return angle;
             },
             colorChange(self,that){
                 let name = that.attr('name')
