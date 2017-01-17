@@ -143,10 +143,96 @@ router.post('/upload',function(req,res){
 function setFile(page){
     mkdirsSync('publish/'+page.name+'/js','0777');
     mkdirsSync('publish/'+page.name+'/css','0777');
-    writeFile('publish/'+page.name+'/js/index.js',page.js ? page.js : '')
+    writeFile('publish/'+page.name+'/js/index.js',page.js ? writeJS(JSON.parse(page.js)) : '')
     writeFile('publish/'+page.name+'/css/index.css',page.style ? page.style : '')
     writeFile('publish/'+page.name+'/index.json',page.json ? page.json : '')
-    writeFile('publish/'+page.name+'/index.html',''+
+    writeFile('publish/'+page.name+'/index.html',writeHTML(page.html))
+}
+
+function writeJS(data){
+    let js = ''+
+            'var data={\n'+
+                'direction:{\n'+
+                    'x:"down",\n'+
+                    'y:"down"\n'+
+                '},\n'+
+                'start:{\n'+
+                    'x:0,\n'+
+                    'y:0\n'+
+                '},\n'+
+                'end:{\n'+
+                    'x:0,\n'+
+                    'y:0\n'+
+                '},\n'+
+                'now:0,\n'+
+                'last:0, \n'+
+                'page:{\n'+
+                    'up:{\n'+
+                        'last:"'+data.pageAnimation+'ULast",\n'+
+                        'now:"'+data.pageAnimation+'UNow",\n'+
+                    '},\n'+
+                    'down:{\n'+
+                        'last:"'+data.pageAnimation+'DLast",\n'+
+                        'now:"'+data.pageAnimation+'DNow",\n'+
+                    '},\n'+
+                '},\n'+
+                'pageLength:$(".page").length,\n'+
+                'isMoving:false\n'+
+            '};\n'+
+            '//$(".page").css({"width":document.documentElement.clientWidth+"px","height":document.documentElement.clientHeight+"px"})\n'+
+            'document.addEventListener("touchstart",function(ev){\n'+
+                'var touch = ev.targetTouches[0];\n'+
+                'data.start.x = touch.clientX;\n'+
+                'data.start.y = touch.clientY;\n'+
+            '},false);\n'+
+            'document.addEventListener("touchmove",function(ev){\n'+
+                'ev.preventDefault();\n'+
+                'var touch = ev.targetTouches[0];\n'+
+                'data.end.x = touch.clientX;\n'+
+                'data.end.y = touch.clientY;\n'+
+            '},false);\n'+
+            'document.addEventListener("touchend",function(ev){\n'+
+                'data.direction.x = (data.end.x - data.start.x) > 0 ? "down" : (data.end.x - data.start.x) < 0 ? "up" : "down";\n'+
+                'data.direction.y = (data.end.y - data.start.y) > 0 ? "down" : (data.end.y - data.start.y) < 0 ? "up" : "down";\n'+
+                'if(!data.isMoving){\n'+
+                    'data.isMoving = true;\n'+
+                    'pageMove();\n'+
+                '}\n'+
+            '},false);\n'+
+            'function pageMove(){;\n'+
+                'data.last = data.now;\n'+
+                'var od = "down";\n'+
+                'if(data.direction.y == "up"){\n'+
+                    'data.now++;\n'+
+                '}else{\n'+
+                    'data.now--;\n'+
+                    'od = "up";\n'+
+                '}\n'+
+                
+                'if(data.now >= data.pageLength){\n'+
+                    'data.now = 0;\n'+
+                '}\n'+
+                'if(data.now <= -1){\n'+
+                    'data.now = data.pageLength - 1;\n'+
+                '}\n'+
+                '$(".page").removeClass('+
+                    'data.page[data.direction.y].now+" "+data.page[data.direction.y].last +'+
+                    '" "+data.page[od].now+" "+data.page[od].last + '+
+                    '" pageCurrent").addClass("hide");\n'+
+                '$(".page"+data.now).removeClass("hide").addClass(data.page[data.direction.y].now+" pageCurrent");\n'+
+                '$(".page"+data.last).removeClass("hide").addClass(data.page[data.direction.y].last);\n'+
+                'setTimeout(function(){\n'+
+                    '$(".page").removeClass('+
+                        'data.page[data.direction.y].now+" "+data.page[data.direction.y].last +'+
+                        '" "+data.page[od].now+" "+data.page[od].last);\n'+
+                    'data.isMoving = false;\n'+
+                '},500);\n'+
+            '};\n';
+    return js
+}
+
+function writeHTML(pageHTML){
+    var html = ''+
         '<!DOCTYPE html>'+'\n'+
         '<html lang="zh">'+'\n'+
             '<head>'+'\n'+
@@ -155,6 +241,7 @@ function setFile(page){
                 '<title>首页</title>'+'\n'+
                 '<link type="text/css" rel="stylesheet" href="/static/css/init.css" />'+'\n'+
                 '<link type="text/css" rel="stylesheet" href="/static/css/common.css" />'+'\n'+
+                '<link type="text/css" rel="stylesheet" href="/static/css/animation.css" />'+'\n'+
                 '<link type="text/css" rel="stylesheet" href="./css/index.css" />'+'\n'+
                 '<script type="text/javascript">'+
                     'var RC = {'+
@@ -183,12 +270,14 @@ function setFile(page){
             '</head>'+'\n'+
             '<body>'+'\n'+
                 '<div class="main">'+'\n'+
-                    page.html + '\n'+
+                    pageHTML + '\n'+
                 '</div>'+ '\n'+
+                '<script type="text/javascript" src="http://10.1.193.233:9000/static/js/lib/jquery.1.10.1.min.js"></script>'+'\n'+
                 '<script type="text/javascript" src="./js/index.js"></script>'+'\n'+
             '</body>'+'\n'+
         '</html>'+
-    '')
+    ''
+    return html
 }
 
 function writeFile(path,string){

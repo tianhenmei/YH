@@ -1,5 +1,5 @@
 <template>
-    <div :id="props.id" :style="props.position" kitty-image>
+    <div :id="props.id" :style="props.position" :class="props.classname" kitty-image>
         <div class="kitty-image-content">
             <img class="yh-image" :src="props.src" :style="props.style" />
             <a :class="{'yh-image-href':props.href}" :href="props.href"></a>
@@ -23,7 +23,8 @@
                     top:0
                 },
                 src:'http://localhost:9000/static/images/Helen.png',
-                href:''
+                href:'',
+                animation:''
             }
         },
         props:['props'],
@@ -45,7 +46,8 @@
                     top:0
                 },
                 src:options.src ? options.src : 'http://localhost:9000/static/images/Helen.png',
-                href:options.href ? options.href : ''
+                href:options.href ? options.href : '',
+                classname:options.classname ? options.classname : ''
             }
         }
     }
@@ -66,5 +68,13 @@
     }
     [kitty-image] .kitty-image-content .yh-image-href {
         display:block;
+    }
+    [kitty-image] .kitty-image-content .yh-image {
+        -webkit-user-select: none; 
+        -moz-user-select: none;    
+        -khtml-user-select: none;  
+        -ms-user-select: none; 
+        -o-user-select: none;
+        user-select: none; 
     }
 </style>

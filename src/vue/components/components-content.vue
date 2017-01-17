@@ -2,7 +2,7 @@
     <div components-content>
         <div class="yh-components-content">
             <div class="yh-content-center">
-                <div v-for="(page,index) in pages" :class="'page page'+index">
+                <div v-for="(page,index) in pages" :class="'page page'+index+getClassname(index)" :style="page.background">
                     <div v-for="element in page.elements" :is="element.yh_module"
                         :props="element.props"
                         >
@@ -10,7 +10,18 @@
                 </div>
                 
             </div>
-            
+            <div class="yh-page-edit">
+                <ul>
+                    <li edit="background-color">
+                        <input type="color" name="backgroundColor" />
+                    </li>
+                    <li edit="background-image">
+                        <input type="file" content="src" accept="image/*" name="backgroundImage" />
+                    </li>
+                </ul>
+            </div>
+
+
             <div class="yh-selectTop yh-selection">
                 <p class="center"></p>
                 <p></p>
@@ -41,9 +52,10 @@
     import MW from './bus.js'
     import Drag from './drag.js'
     import YHImage from './image.vue'
+    import YHText from './text.vue'
 
     const Elements = {
-        // 'components-text':YHText,
+        'components-text':YHText,
         'components-image':YHImage,
         // 'components-button':YHButton,
         // 'components-form':YHForm,
@@ -79,7 +91,8 @@
                             backgroundColor:'transparent',
                             backgroundImage:'',
                             backgroundRepeat:'no-repeat',
-                            backgroundPosition:'0 0'
+                            backgroundPosition:'0 0',
+                            backgroundSize:'100% 100%'
                         }
                     }
                 ],
@@ -87,19 +100,34 @@
                 fontSize:16,
                 distance:15,
                 title:"It's title",
-                count:1
+                count:1,
+                pageAnimation:'move'
             }
         },
         created(){
-            var that = this;
+            var that = this
             MW.bus.$on('addChild',name => {
-                that.addChild(name);
-            });
+                that.addChild(name)
+            })
             MW.bus.$on('savePage',() => {
-                that.savePage();
-            });
+                that.savePage()
+            })
             MW.bus.$on('previewPage',() => {
-                that.previewPage();
+                that.previewPage()
+            })
+            MW.bus.$on('addPage',(index,callback) => {
+                that.addPage(index,callback)
+            })
+            MW.bus.$on('removePage',(index) => {
+                that.removePage(index)
+            })
+            MW.bus.$on('pageAnimation',(value) => {
+                that.pageAnimation = value
+            })
+            MW.bus.$on('changePage',(index) => {
+                that.currentPage = index
+                $('.setting').removeClass('setting')
+                $('.yh-selection').hide()
             })
         },
         mounted(){
@@ -142,10 +170,10 @@
                 var components_content = $('.yh-content-center')
                 var self = this;
                 // 初始化文件上传事件
-                components_content.on('change','input[type="file"]',function(e){
+                $('.yh-components-content').on('change','input[type="file"]',function(e){
                     var file = this.files[0];
                     self.fileChange(file,this,self);
-                });
+                })
                 // 设置拖动事件
                 new Drag({
                     outer:'.yh-components-content',
@@ -156,44 +184,248 @@
                     mousedownCallback:self.mousedownCallback,
                     firstMoveCallback:self.hideEditLayer,
                     mouseupCallback:self.mouseupCallback
-                });
+                })
                 
                 components_content.on('mouseenter','.page > div',function(e){
                     $(this).children('.yh-edit-layer').show();
-                });
+                })
                 components_content.on('mouseleave','.page > div',function(e){
                     $(this).children('.yh-edit-layer').hide();
                 })
+
+                this.initRemoveEvent()
+                this.initColorEvent()
+                this.initSizeChangeEvent()
+            },
+            initRemoveEvent(){
+                var self = this;
+                $(document).on('click','#delete',function(e){
+                    var elem = $('.setting'),
+                        elemID = elem.attr('id');
+                    
+                    var index = self.getIndex(elemID,self)
+                    self.pages[self.currentPage].elements.splice(index,1)
+                    elem.remove();
+                });
+            },
+            initColorEvent(){
+                let input = $('input[type="color"]')
+                let self = this
+                for( let i = 0; i < input.length; i++ ){
+                    input[i].addEventListener('input',function(event){
+                        self.colorChange(self,$(this));
+                    },false);
+                    input[i].addEventListener('propertychange',function(event){
+                        if (event.propertyName.toLowerCase () == "value") {
+                            self.colorChange(self,$(this));
+                        }
+                    },false);
+                }
+            },
+            initSizeChangeEvent(){
+                let selectP = $('.yh-selection')
+                let body = $('body')
+                let move_box = $('#yh-move-box')
+                let down = false,
+                    isMoving = false,
+                    elem = null,
+                    elemID = '',
+                    data = {
+                        width:0,
+                        height:0,
+                        left:0,
+                        top:0
+                    },
+                    last = {
+                        width:0,
+                        height:0,
+                        left:0,
+                        top:0
+                    },
+                    start = { x:0, y:0 },
+                    end = { x:0, y:0 },
+                    distance = 15,
+                    self = this,
+                    type = ''
+
+                selectP.on('mousedown','p',function(e){
+                    down = true
+                    start.x = e.clientX
+                    start.y = e.clientY
+                    elem = $('.setting')
+                    elemID = elem.attr('id')
+                    data.width = self.getPointOuterWidth(elem)
+                    data.height = self.getPointOuterHeight(elem)
+                    data.left = self.getPointValue(elem,'left') + distance
+                    data.top = self.getPointValue(elem,'top') + distance
+
+                    let parent = $(this).parent(),
+                        isCenter = $(this).hasClass('center')
+                    if(parent.hasClass('yh-selectTop')){
+                        if(isCenter){
+                            type = 'top'
+                        }else{
+                            type = 'lt'  // 左上角
+                        }
+                    }else if(parent.hasClass('yh-selectBottom')){
+                        if(isCenter){
+                            type = 'bottom'
+                        }else{
+                            type = 'rb'  // 右下角
+                        }
+                    }else if(parent.hasClass('yh-selectLeft')){
+                        if(isCenter){
+                            type = 'left'
+                        }else{
+                            type = 'lb'  // 左下角
+                        }
+                    }else if(parent.hasClass('yh-selectRight')){
+                        if(isCenter){
+                            type = 'right'
+                        }else{
+                            type = 'rt'  // 右上角
+                        }
+                    }
+                })
+                body.on('mousemove',function(e){
+                    if(down){
+                        if(!isMoving){
+                            isMoving = true
+                            move_box.css({
+                                'width':data.width+'px',
+                                'height':data.height+'px',
+                                'left':data.left + 'px',
+                                'top':data.top +'px',
+                                'display':'block'
+                            });
+                        }
+                        end.x = e.clientX
+                        end.y = e.clientY
+                        switch(type){
+                            case 'top':
+                                move_box.css({
+                                    'height':(data.height + start.y - end.y)+'px',
+                                    'top':(data.top + end.y - start.y) +'px'
+                                })
+                                break
+                            case 'bottom':
+                                move_box.css({
+                                    'height':(data.height + end.y - start.y)+'px'
+                                })
+                                break
+                            case 'left':
+                                move_box.css({
+                                    'width':(data.width + start.x - end.x)+'px',
+                                    'left':(data.left + end.x - start.x) +'px'
+                                })
+                                break
+                            case 'right':
+                                move_box.css({
+                                    'width':(data.width + end.x - start.x)+'px',
+                                })
+                                break
+                            case 'lt': // 左上
+                                move_box.css({
+                                    'width':(data.width + start.x - end.x)+'px',
+                                    'height':(data.height + start.y - end.y)+'px',
+                                    'left':(data.left + end.x - start.x) +'px',
+                                    'top':(data.top + end.y - start.y) +'px'
+                                })
+                                break
+                            case 'rb': // 右下
+                                move_box.css({
+                                    'width':(data.width + end.x - start.x)+'px',
+                                    'height':(data.height + end.y - start.y)+'px'
+                                })
+                                break;
+                            case 'lb': // 左下
+                                move_box.css({
+                                    'width':(data.width + start.x - end.x)+'px',
+                                    'height':(data.height + end.y - start.y)+'px',
+                                    'left':(data.left + end.x - start.x) +'px'
+                                })
+                                break;
+                            case 'rt': // 右上
+                                move_box.css({
+                                    'width':(data.width + end.x - start.x)+'px',
+                                    'height':(data.height + start.y - end.y)+'px',
+                                    'top':(data.top + end.y - start.y) +'px'
+                                })
+                                break;
+                        }
+                    }
+                })
+                body.on('mouseup',function(e){
+                    if(down){
+                        last.width = self.getPointOuterWidth(move_box)
+                        last.height = self.getPointOuterHeight(move_box)
+                        last.left = self.getPointValue(move_box,'left') - distance
+                        last.top = self.getPointValue(move_box,'top') - distance
+
+                        let index = self.getIndex(elemID,self)
+
+                        self.pages[self.currentPage].elements[index].props.style.width = self.toRem(last.width);
+                        self.pages[self.currentPage].elements[index].props.style.height = self.toRem(last.height);
+                        self.pages[self.currentPage].elements[index].props.position.left = self.toRem(last.left);
+                        self.pages[self.currentPage].elements[index].props.position.top = self.toRem(last.top);
+                        MW.isMoving = true
+                        self.distance = 0
+                        self.settingBox(move_box)
+                        self.distance = distance
+                        // self.mousedownCallback($('.yh-content-center'),elem)
+                    }
+                    move_box.hide()
+                    down = false
+                    isMoving = false
+                })
+            },
+            colorChange(self,that){
+                let name = that.attr('name')
+                let color = that.val()
+                
+                self.pages[self.currentPage]['background'][name] = color
             },
             fileChange(file,that,self){
                 var fileData = new FormData();
                 fileData.append('files',file,file.name);
                 $.ajax({
                     type:'post',
-                    url:'http://localhost:9000/editor/upload',
+                    url:'http://10.1.193.233:9000/editor/upload',
                     data:fileData,
                     dataType: 'JSON',  
                     cache: false,  
                     processData: false,  
                     contentType: false,
                     success(data){
-                        var elem = $('.setting'),
-                            elemID = elem.attr('id'),
-                            img = elem.find('.yh-image')[0],
-                            index = self.getIndex(elemID,self);
-                        img.src = 'http://localhost:9000/'+data.content.path
-                        img.onload = function(){
-                            self.settingBox(elem);
-                        };
-
-                        self.pages[self.currentPage].elements[index].props.src = img.src;
-                        self.pages[self.currentPage].elements[index].props.style.width = self.getRem(data.content.width);
-                        self.pages[self.currentPage].elements[index].props.style.height = self.getRem(data.content.height);
+                        var name = that.attributes['name'].value
+                        switch(name){
+                            case 'image':
+                                self.imageChange(self,data.content)
+                                break;
+                            case 'backgroundImage':
+                                self.pages[self.currentPage].background.backgroundImage = "url(http://10.1.193.233:9000/"+data.content.path+")";
+                                // console.log(self.pages[self.currentPage].background.backgroundImage)
+                                break;
+                        }
                     },
                     error(error){
                         console.log(error.message);
                     }
                 });
+            },
+            imageChange(self,data){
+                var elem = $('.setting'),
+                    elemID = elem.attr('id'),
+                    img = elem.find('.yh-image')[0],
+                    index = self.getIndex(elemID,self);
+                img.src = 'http://10.1.193.233:9000/'+data.path
+                img.onload = function(){
+                    self.settingBox(elem);
+                };
+
+                self.pages[self.currentPage].elements[index].props.src = img.src;
+                self.pages[self.currentPage].elements[index].props.style.width = self.getRem(data.width);
+                self.pages[self.currentPage].elements[index].props.style.height = self.getRem(data.height);
             },
             getIndex(elemID,self){
                 var index = 0
@@ -204,6 +436,9 @@
                     }
                 }
                 return index;
+            },
+            getClassname(index){
+                return index == this.currentPage ? '' : ' hide'
             },
 
 
@@ -286,7 +521,12 @@
                     module:name.split('-')[1],
                     props:Elements[name].initCtor({id:elemID},this)
                 });
+
+                // this.drawSmallPage()
             },
+            // drawSmallPage(){
+            //     MW.bus.$emit('drawSmallPage')
+            // },
 
 
 
@@ -296,9 +536,13 @@
 
 
 
-
-
-
+            addPage(index,callback){
+                this.pages.splice(index,0,Object.assign({},MW.pageData))
+                callback(this.pages[index])
+            },
+            removePage(index){
+                this.pages.splice(index,1)
+            },
             getPageData(templateID,self){
                 $.ajax({
                     type:'post',
@@ -335,6 +579,7 @@
                                 }
                             }
                         }
+                        MW.bus.$emit('setPages',self.pages)
                     },
                     error:function(error){
                         console.log(error.message);
@@ -355,6 +600,26 @@
                     elem.eq(i).addClass(name)
                         .removeAttr('style');
                 }
+                totalElement.children('.page').addClass('hide')
+                totalElement.children('.page0').removeClass('hide')
+                var data = {};
+                for(let attr in this.$data){
+                    switch(attr){
+                        case 'pages':
+                            data.pages = [];
+                            for(let i = 0; i < this.$data[attr].length; i++){
+                                data.pages.push(JSON.parse(JSON.stringify(this.$data[attr][i])));
+                                for(let j = 0; j < data.pages[i].elements.length; j++){
+                                    data.pages[i].elements[j].yh_module = null;
+                                    data.pages[i].elements[j].props.classname = document.getElementById(data.pages[i].elements[j].yh_id).className.replace('setting','');
+                                }
+                            }
+                            break;
+                        default:
+                            data[attr] = this.$data[attr];
+                            break;
+                    }
+                }
                 $.ajax({
                     type:'post',
                     url:'http://localhost:9000/editor/save',
@@ -363,7 +628,10 @@
                         name:'test',
                         style:style,
                         html:totalElement.html(),
-                        json:JSON.stringify(this.$data).replace('\'','’'),
+                        json:JSON.stringify(data).replace('\'','’'),
+                        js:JSON.stringify({
+                            pageAnimation:this.pageAnimation
+                        }),
                         author:'yh'
                     },
                     success(data){
