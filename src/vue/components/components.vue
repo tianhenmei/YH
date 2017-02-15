@@ -14,7 +14,7 @@
     </div>
 </template>
 <script>
-    import $ from '../../common/js/lib/jquery.1.10.1.min.js'
+    // import $ from '../../common/js/lib/jquery.1.10.1.min.js'
 
     import MW from './bus.js'
     import Pages from './components-pages'

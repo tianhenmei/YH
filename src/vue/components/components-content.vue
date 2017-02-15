@@ -98,6 +98,7 @@
                     }
                 ],
                 currentPage:MW.currentPage,
+                drag:null,
                 fontSize:16,
                 distance:15,
                 title:"It's title",
@@ -129,6 +130,12 @@
                 that.currentPage = index
                 $('.setting').removeClass('setting')
                 $('.yh-selection').hide()
+            })
+            MW.bus.$on('focusSelection',() => {
+                that.drag.status = false
+            })
+            MW.bus.$on('blurSelection',() => {
+                that.drag.status = true
             })
         },
         mounted(){
@@ -176,7 +183,7 @@
                     self.fileChange(file,this,self);
                 })
                 // 设置拖动事件
-                new Drag({
+                this.drag = new Drag({
                     outer:'.yh-components-content',
                     contain:'.yh-content-center',
                     move_box:'#yh-move-box',
@@ -187,12 +194,12 @@
                     mouseupCallback:self.mouseupCallback
                 })
                 
-                components_content.on('mouseenter','.page > div',function(e){
-                    $(this).children('.yh-edit-layer').show();
-                })
-                components_content.on('mouseleave','.page > div',function(e){
-                    $(this).children('.yh-edit-layer').hide();
-                })
+                // components_content.on('mouseenter','.page > div',function(e){
+                //     $(this).children('.yh-edit-layer').show();
+                // })
+                // components_content.on('mouseleave','.page > div',function(e){
+                //     $(this).children('.yh-edit-layer').hide();
+                // })
 
                 this.initRemoveEvent()
                 this.initColorEvent()

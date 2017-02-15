@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>首页</title>
+<link type="text/css" rel="stylesheet" href="/static/css/init.css" />
+<style>
+    ul {
+
+    }
+    li {
+        width:100px;
+        height:100px;
+        line-height:100px;
+        float:left;
+        border:1px solid red;
+        color:#333;
+        text-align:center;
+    }
+</style>
+</head>
+<body>
+    <div id="main">
+        <!--<input type="text" v-model="color" />-->
+        <p>{{yh.color}}</p>
+        <input type="text" :value="yh.color" />
+        <input type="color" v-model="yh.color" />
+        <div>
+            <p>{{current.name}}</p>
+            <p>{{current.city}}</p>
+        </div>
+        <ul class="clearfix">
+            <li class="one" :class="{'oneClass': index == length}" v-for="(item,index) in list" @click="changeCompany(index)">{{item.name}}</li>
+        </ul>
+    </div>
+<script type="text/javascript" src="http://localhost:9000/static/js/lib/vue2.1.10.js"></script>
+<script type="text/javascript">
+    var pageVue = new Vue({
+        el:'#main',
+        data:{
+            message:'臭皮蛋臭老公',
+            yh:{
+                color:'#666'
+            },
+            list:[
+                {
+                    name:'拉勾',
+                    city:'北京'
+                },{
+                    name:'新浪微博',
+                    city:'上海'
+                },{
+                    name:'百度',
+                    city:'成都'
+                },{
+                    name:'猪八戒网',
+                    city:'重庆'
+                },{
+                    name:'淘宝网',
+                    city:'杭州'
+                }
+            ],
+            current:{
+                name:'拉勾',
+                city:'北京'
+            },
+            length:0
+        },
+        created(){
+            this.current = JSON.parse(JSON.stringify(this.list[0]))
+        },
+        mounted(){
+            let self = this
+            console.log(document.getElementsByClassName('one'))
+            setInterval(function(){
+                self.length++
+                if(self.length == self.list.length){
+                    self.length = 0
+                }
+            },1000)
+        },
+        methods:{
+            setLiClass(index){
+                return length == index ? 'oneClass': ''
+            },
+            changeColor(now,old){
+                console.log(now+' , '+old)
+            },
+            changeCompany(index){
+                this.current = JSON.parse(JSON.stringify(this.list[index]))
+            }
+        },
+        watch:{
+            color:{
+                handler:'changeColor',
+                deep:true
+            }
+        }
+    });
+</script>
+</body>
+</html>

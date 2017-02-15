@@ -272,7 +272,7 @@ function writeHTML(pageHTML){
                 '<div class="main">'+'\n'+
                     pageHTML + '\n'+
                 '</div>'+ '\n'+
-                '<script type="text/javascript" src="http://10.1.193.233:9000/static/js/lib/jquery.1.10.1.min.js"></script>'+'\n'+
+                '<script type="text/javascript" src="http://192.168.0.110:9000/static/js/lib/jquery.1.10.1.min.js"></script>'+'\n'+
                 '<script type="text/javascript" src="./js/index.js"></script>'+'\n'+
             '</body>'+'\n'+
         '</html>'+

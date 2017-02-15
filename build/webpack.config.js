@@ -36,7 +36,7 @@ var config = {
                 loader: 'babel',
                 exclude: /node_modules/
             },{
-                test: /\.woff|\.eot|\.svg|\.ttf|\.png|\.jpg|\.gif|\.jpeg/,
+                test: /\.woff|\.eot|\.svg|\.ttf|\.otf|\.png|\.jpg|\.gif|\.jpeg/,
                 loader: 'url-loader'
             },{ 
                 test: /\.css$/, 

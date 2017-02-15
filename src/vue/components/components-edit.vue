@@ -61,6 +61,10 @@
                         <li animation="yh-right">从右进入</li>
                         <li animation="yh-top">从上进入</li>
                         <li animation="yh-bottom">从下进入</li>
+                        <li animation="yh-lfade">从左淡入</li>
+                        <li animation="yh-rfade">从右淡入</li>
+                        <li animation="yh-tfade">从上淡入</li>
+                        <li animation="yh-bfade">从下淡入</li>
                         <li animation="yh-lbounce">从左弹跳进入</li>
                         <li animation="yh-rbounce">从右弹跳进入</li>
                         <li animation="yh-tbounce">从上弹跳进入</li>

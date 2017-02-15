@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>Object.defineProperty</title>
+</head>
+<body>
+    <div id="app">
+        <input type="text" v-model="text" />
+        {{text}}
+    </div>
+
+<script type="text/javascript">
+    var vm = new Vue({
+        el:'app',
+        data:{
+            text:'Hello dagou'
+        }
+    });
+
+    function Vue(options){
+        this.data = options.data;
+        this.id = options.el;
+
+        observe(this.data,this);
+        var dom = nodeToFragment(document.getElementById(this.id),this);
+        
+        document.getElementById(this.id).appendChild(dom);
+    }
+
+    function observe(obj,vm){
+        Object.keys(obj).forEach(function(key){
+            defineReactive(vm,key,obj[key]);
+        });
+    }
+
+    function defineReactive(obj,key,value){
+        Object.defineProperty(obj,key,{
+            get:function(){
+                return value
+            },
+            set:function(newValue){
+                if(newValue == value) return;
+                value = newValue;
+                console.log(value);
+            }
+        });
+    }
+
+    function nodeToFragment(elem,vm){
+        var frag = document.createDocumentFragment();
+        var child;
+        while(child = elem.firstChild){
+            compile(child,vm);
+            frag.append(child);
+        }
+        return frag;
+    }
+    
+
+    function compile(node,vm){
+        var reg = /\{\{(.*)\}\}/;
+        if(node.nodeType == 1){  // 节点类型
+            var attr = node.attributes;
+            for( var i = 0; i < attr.length; i++ ){
+                if(attr[i].nodeName == 'v-model'){
+                    var name = attr[i].nodeValue;
+                    
+                    node.addEventListener('input',function(e){
+                        vm[name] = e.target.value;
+                    },false);
+
+                    node.value = vm[name];
+                    node.removeAttribute('v-model');
+                }
+            }
+        }else if(node.nodeType == 3){  // 文本类型
+            if(reg.test(node.nodeValue)){
+                var name = RegExp.$1.trim();
+                node.nodeValue = vm[name];
+            }
+        }
+    }
+
+    var publisher = {
+        publish:function(){
+            dep.notify();
+        }
+    };
+
+    var subscriber0 = { update:function(){ console.log('subscriber0') } };
+    var subscriber1 = { update:function(){ console.log('subscriber1') } };
+    var subscriber2 = { update:function(){ console.log('subscriber2') } };
+
+    function Dep(){
+        this.subscribers = [subscriber0,subscriber1,subscriber2];
+    }
+
+    Dep.prototype.notify = function(){
+        this.subscribers.forEach(function(sub){
+            sub.update();
+        });
+    };
+
+    var dep = new Dep();
+    publisher.publish();
+
+
+
+
+
+
+    // var obj = {};
+    // Object.defineProperty(obj,"hello",{
+    //     set:function(newValue){
+    //         document.getElementById('a').value = newValue;
+    //         document.getElementById('ap').innerHTML = newValue;
+    //     }
+    // });
+    // document.addEventListener('keyup',function(e){
+    //     obj.hello = e.target.value;
+    // },false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // var o = {
+    //     a:'344'
+    // };
+    // Object.defineProperty(o,'b',{
+    //     value:123,
+    //     writable:true,   // 默认false
+    //     enumerable:true,   // 默认false 
+    //     configurable:false  //默认flase, 总开关，设置为false之后其他的都不能设置了 
+    // });
+    // console.log('o.b = '+Object.keys(o));
+    // console.log('o.propertyIsEnumerable(b): '+o.propertyIsEnumerable('b'))
+    // // for(var i in o){
+    // //     console.log('attr: '+i)
+    // // }
+    // console.log(o.b)
+    // // 在 descriptor 中不能 同时设置访问器 (get 和 set) 和 wriable 或 value，否则会错，
+    // // 就是说想用(get 和 set)，就不能用（wriable 或 value中的任何一个）
+
+    // var dd;
+    // Object.defineProperty(o,'d',{
+    //     set:function(newValue){
+    //         dd = newValue;
+    //         console.log('我的新值：'+newValue)
+    //     },
+    //     get:function(){
+    //         console.log('你要取的值：'+ dd);
+    //         return dd
+    //     }
+    // });
+
+    // o.d = 33;
+    // console.log(o.d);
+
+
+    // function defineReactive(obj,key,value){
+
+    // }
+</script>
+</body>
+</html>

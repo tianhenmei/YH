@@ -96,6 +96,7 @@ class Drag{
             x:0,
             y:0
         }
+        this.status = true;
 
         this.initEvent()
     }
@@ -105,17 +106,32 @@ class Drag{
         this.outer.on('mousedown',this.elemPath,function(e){
             e.stopPropagation();
 
-            self.elem = $(this);
-            if(!self.move_box){
-                self.move_box = self.elem;
+            if(self.status){
+                self.elem = $(this);
+                if(!self.move_box){
+                    self.move_box = self.elem;
+                }
+                self.mousedown(e.clientX,e.clientY,self);
+            }else{
+                self.ismoving = false;
+                self.down = false;
             }
-            self.mousedown(e.clientX,e.clientY,self);
         })
         body.on('mousemove',function(e){
-            self.mousemove(e.clientX,e.clientY,self);
+            if(self.status){
+                self.mousemove(e.clientX,e.clientY,self);
+            }else{
+                self.ismoving = false;
+                self.down = false;
+            }
         })
         body.on('mouseup',function(e){
-            self.mouseup(e.clientX,e.clientY,self);
+            if(self.status){
+                self.mouseup(e.clientX,e.clientY,self);
+            }else{
+                self.ismoving = false;
+                self.down = false;
+            }
         })
     }
     mouseup(x,y,self){

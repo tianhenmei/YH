@@ -66,6 +66,7 @@ li[page] .yh-page-selected .yh-page-add{
     color:#fff;
     border-radius: 26px;
     background: #666;
+    cursor:pointer;
 }
 li[page] .yh-page-remove {
     width: 30px;
@@ -74,6 +75,7 @@ li[page] .yh-page-remove {
     position: absolute;
     right: 0;
     top: 0;
+    cursor:pointer;
 }
 li[page] .yh-page-hide {
     display:none;
@@ -110,4 +112,11 @@ li[page] .yh-page-hide {
 }
 [components-pages] [components-pages-bar].search_hide{
     display:none;
+}
+
+[components-pages] .yh-edit-layer{
+    display:none!important;
+}
+[components-pages] .white-bg {
+    background:transparent;
 }

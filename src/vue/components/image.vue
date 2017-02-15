@@ -1,5 +1,5 @@
 <template>
-    <div :id="props.id" :style="props.position" :class="props.classname" kitty-image>
+    <div :id="props.id" :style="props.position" :class="props.classname" kitty-image  @mouseenter.stop.prevent="showEditLayer" @mouseleave.stop.prevent="hideEditLayer">
         <div class="kitty-image-content">
             <img class="yh-image" :src="props.src" :style="props.style" rotate />
             <a :class="{'yh-image-href':props.href}" :href="props.href"></a>
@@ -31,6 +31,12 @@
         methods:{
             getRem(value){
                 return value / (750 / 16) + 'rem';
+            },
+            showEditLayer(e){
+                $(e.target).children('.yh-edit-layer').show();
+            },
+            hideEditLayer(e){
+                $(e.target).children('.yh-edit-layer').hide();
             }
         },
         initCtor(options,that){
