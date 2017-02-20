@@ -216,7 +216,8 @@
                         name: '缩进', 
                         active: false, 
                         styleName: 'margin-left',
-                        styleValue: '25px',
+                        value:25,
+                        styleValue: '0px',
                         initValue:0,
                         relative:['outdent']
                     },
@@ -224,7 +225,8 @@
                         name: '伸出', 
                         active: false, 
                         styleName: 'margin-left',
-                        styleValue: '-25px', 
+                        value:-25,
+                        styleValue: '0px', 
                         initValue:0,
                         relative:['indent']
                     },
@@ -384,6 +386,7 @@
 
                 // 普通    颜色     链接
                 if(nowEditStatus){
+                    let rangeStatus = true
                     if(hasRange){ // 当前有选择文本
                         if(nowEditStatus){
                             firstCommonParent = DOM.getFirstCommonParent()
@@ -394,17 +397,47 @@
                         }
                     }else{ // 当前没有选择文本
                         elem = $('.setting').children('.kitty-text-content')
+                        rangeStatus = false
                     }
                     let data = JSON.parse(li[0].attributes['cmd'].value),
                         name = li.attr('yh-name'),
                         elemValue = data.initValue
 
                     switch(name){
+                        case 'indent':  // 缩进
+                        case 'outdent':  // 伸出
+                            elemValue = data.value
+                            if(rangeStatus){
+                                let elemParent = DOM.getParentLi(elem,false)
+                                Execute.setIndent(elemValue,elemParent,this)
+                            }else{
+                                let cParent = DOM.getCursorPosition()
+                                if(cParent.attributes['yh-name']){
+                                    alert('* 请先选择需要缩进或伸出的元素！')
+                                }else{
+                                    Execute.setIndent(elemValue,[cParent],this)
+                                }
+                            }
+                            // data.styleValue = lastValue+'rem'
+                            break
                         case 'ol':
                         case 'ul':
                             let cParent = DOM.getCursorPosition(),
                                 relativeName = name == 'ol' ? 'ul' : 'ol',
-                                elemLi = DOM.getParentLi(elem)
+                                elemLi = []/*,
+                                elstatus = DOM.getAllElementStatus(elem)
+                            
+                            if(elstatus){
+                                elemLi = DOM.getParentLi(elem,false)
+                            }else{
+                                elemLi = DOM.getParentLi(elem,false)
+                                // elemLi = DOM.getParentLi(elem)
+                            }*/
+                            if(rangeStatus){
+                                elemLi = DOM.getParentLi(elem,false)
+                            }else{
+                                elemLi = [cParent]
+                            }
                             if(cParent){
                                 if(this.cmd[name].active){
                                     Execute.unwrapLi(cParent)
@@ -412,7 +445,12 @@
                                 }else{
                                     if(elemLi.length > 0){
                                         for(let el = 0; el < elemLi.length; el++){
-                                            Execute.wrapLi(elemLi[el],name)
+                                            if(elemLi[el]){
+                                                Execute.wrapLi(elemLi[el],name)
+                                            }else{
+                                                Execute.wrapLi(cParent,name)
+                                                break
+                                            }
                                         }
                                     }else{
                                         Execute.wrapLi(cParent,name)
@@ -494,98 +532,6 @@
                 }else if(hasLi){
                     li.find('.yh-tedit-list,.yh-tedit-list-parent').show()
                 }
-                MW.textEditing = false
-            },
-            setStyleOrigin(target){
-                MW.textEditing = true
-                let that = $(target),
-                    isEditLi = that.hasClass('yh-edit-normal'),  // 直接设置的元素
-                    list = isEditLi ? that : that.closest('.yh-edit-normal'),  // 有列表的
-                    isList = isEditLi || that.closest('.yh-edit-normal').length > 0
-
-                DOM.restoreRange()
-                let elem = null,
-                    firstCommonParent = null,
-                    nextNode = null,
-                    parent = null,
-                    hasRange = false,
-                    startOffset = 0,
-                    endOffset = 0
-                if(DOM.isSelectedRange() && target.tagName.toLowerCase() == 'li'){  // 当前有选择文本
-                    firstCommonParent = DOM.getFirstCommonParent()
-                    elem = DOM.getRangeElem()
-                    hasRange = true
-                }else if(DOM.isSelectedRange() && target.type == 'color'){
-                    firstCommonParent = DOM.getFirstCommonParent()
-                    elem = DOM.getRangeElem()
-                    hasRange = true
-                }else{  // 当前没有选择文本
-                    elem = $('.setting').children('.kitty-text-content')
-                }
-
-                if(target.tagName.toLowerCase() == 'li' || target.type == 'color'){
-                    let data = JSON.parse(list[0].attributes['cmd'].value),
-                        name = list.attr('yh-name')
-
-                        if(isEditLi){  // 能直接设置的
-                            if(data.active){
-                                data.active = false
-                                if(hasRange){
-                                    for (let i = 0; i < elem.length; i++){
-                                        elem[i].css(data.styleName,data.initValue)
-                                    }
-                                    if(DOM.getChildNodesLength(firstCommonParent[0]) == elem.length && (firstCommonParent.attr('style')+'').indexOf(data.styleName) != -1){
-                                        firstCommonParent.css(data.styleName,data.initValue)
-                                    }
-                                    DOM.saveChangeRange(elem[0][0].firstChild,0,elem[elem.length-1][0].firstChild,elem[elem.length-1].html().length)
-                                    DOM.restoreRange()
-                                }else{
-                                    elem.css(data.styleName,data.initValue)
-                                }
-                            }else{
-                                data.active = true
-                                if(hasRange){
-                                    for (let i = 0; i < elem.length; i++){
-                                        elem[i].css(data.styleName,data.styleValue)
-                                    }
-                                    if(DOM.getChildNodesLength(firstCommonParent[0]) == elem.length && (firstCommonParent.attr('style')+'').indexOf(data.styleName) != -1){
-                                        firstCommonParent.css(data.styleName,data.styleValue)
-                                    }
-                                    DOM.saveChangeRange(elem[0][0].firstChild,0,elem[elem.length-1][0].firstChild,elem[elem.length-1].html().length)
-                                    DOM.restoreRange()
-                                }else{
-                                    elem.css(data.styleName,data.styleValue)
-                                }
-                                if(data.relative){
-                                    for(let d = 0; d < data.relative.length; d++){
-                                        this.cmd[data.relative[d]].active = false
-                                    }   
-                                }
-                            }
-                            this.cmd[name].active = data.active
-                        }else{  // 有下拉列表的
-                            data.styleValue = target.type == 'color' ? that.val() :that.attr('value')
-                            this.cmd[name].styleValue = data.styleValue
-                            
-                            if(hasRange){
-                                for (let i = 0; i < elem.length; i++){
-                                    elem[i].css(data.styleName,data.styleValue+this.cmd[name].unit)
-                                }
-                                if(DOM.getChildNodesLength(firstCommonParent[0]) == elem.length && (firstCommonParent.attr('style')+'').indexOf(data.styleName) != -1){
-                                    firstCommonParent.css(data.styleName,data.styleValue+this.cmd[name].unit)
-                                }
-                                DOM.saveChangeRange(elem[0][0].firstChild,0,elem[elem.length-1][0].firstChild,elem[elem.length-1].html().length)
-                                DOM.restoreRange()
-                            }else{
-                                elem.css(data.styleName,data.styleValue+this.cmd[name].unit)
-                            }
-                            if(!this.linkChangeStatus){
-                                list.find('.yh-tedit-list,yh-tedit-list-parent').hide()
-                            }
-                        }
-                }else if(isList){//if(target.tagName.toLowerCase() == 'li' || target.type == 'color'){
-                    list.find('.yh-tedit-list,yh-tedit-list-parent').show()
-                }//}else if(isList){
                 MW.textEditing = false
             },
             focusSelection(e){
@@ -733,7 +679,7 @@
             options = options || {}
             return {
                 id:options.id ? options.id : '',
-                content: options.content || "<p>It's a test.</p>",
+                content: options.content || "<ol style=\"text-align:left;\"><li>It's a test.<ol style=\"margin-left: 1.06666rem;\"><li>hello</li><li>dagou</li></ol></li><li>waoefnaeojg</li><li>xxnxixn</li></ol>",
                 position:{
                     left:0,
                     top:0
@@ -765,6 +711,10 @@
     [kitty-text] .kitty-text-content ol > li,
     [kitty-text] .kitty-text-content ol{
         list-style:	decimal inside none;
+    }
+    [kitty-text] .kitty-text-content ul > li.style-none,
+    [kitty-text] .kitty-text-content ol > li.style-none{
+        list-style:none;
     }
 
 

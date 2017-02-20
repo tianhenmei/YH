@@ -71,6 +71,13 @@ var DOM = {
     getTagName(elem) {
         return elem.tagName.toLowerCase()
     },
+    getCssProperty(elem, styleName) {
+        return window.getComputedStyle(elem,null).getPropertyValue(styleName)
+    },
+    getHtmlRem(value){
+        let fontSize = parseFloat(this.getCssProperty(document.getElementsByTagName("html")[0],'font-size'))
+        return value / fontSize
+    },
     getArray(origin){
         var current = []
         if(this.isString(origin)) {
@@ -159,16 +166,17 @@ var DOM = {
             null
         }
     },
-    getCssProperty(elem, styleName) {
-        return getComputedStyle(elem).getPropertyValue(styleName)
-    },
     getSelectedElem(elem,range,rangeStatus){
         let parent = this.getElementParent(elem),
             nextNode = null,
             previousNode = null
 
         if(elem.nodeType === Node.ELEMENT_NODE){
-            elem = $(elem)
+            if(range.endOffset == 0){
+                return null
+            }else {
+                elem = $(elem)
+            }
         }else if(elem.nodeType === Node.TEXT_NODE) {
             var startElem = null,
                 firstNode = null,
@@ -288,7 +296,7 @@ var DOM = {
         return elem
     },
     equalParent(elem,current) {
-        while(!current.attributes || !current.attributes['id']){
+        while(current && (current.nodeType == Node.TEXT_NODE || !current.attributes || !current.attributes['id'])){
             if(elem == current) {
                 return true
             }else {
@@ -326,6 +334,16 @@ var DOM = {
             elem = $(centerNode)
         }
         return elem
+    },
+    _getFirstElementChild(elem){
+        return elem.firstChild
+        // let childs = elem.childNodes
+        // for(let c = 0; c < childs.length; c++){
+        //     if(childs[c].nodeType == Node.ELEMENT_NODE){
+        //         return childs[c]
+        //     }
+        // }
+        // return null
     },
     getRangeOriginalElem(){
         if(!this.getSelectionRange()){
@@ -414,20 +432,23 @@ var DOM = {
             centerNode = startElem.parentNode
             startParent = startElem.parentNode
             while(true){  // start 与 end 不是同一个元素时
-                while(centerNode && !this.equalParent(centerNode,endElem.parentNode)){  // 当前元素与结尾元素不是一个父节点
+                while(centerNode && !this.equalParent(centerNode,endElem)){  // 当前元素与结尾元素不是一个父节点
                     centerNode = centerNode.nextSibling
-                    if(centerNode && !this.equalParent(centerNode,endElem.parentNode)){  // 当前元素与结尾元素不是一个父节点
+                    if(centerNode && !this.equalParent(centerNode,endElem)){  // 当前元素与结尾元素不是一个父节点
                         centerArray.push(centerNode)
                     }
                 }
-                if(centerNode && this.equalParent(centerNode,endElem.parentNode)){
-                    let previousData = this.getElementPrevious(centerNode,endElem)
+                if(centerNode && centerNode == endElem){
+                    break
+                }
+                if(centerNode && this.equalParent(centerNode,endElem)){
+                    let previousData = this.getElementPrevious(centerNode,startElem,endElem)
                     centerArray = centerArray.concat(previousData.list)
                     if(previousData.status){
                         break
                     }
                 }
-                if(this.equalParent(startParent,endElem.parentNode)){  // 直到两个的父元素相等才截止
+                if(this.equalParent(startParent,endElem)){  // 直到两个的父元素相等才截止
                     break
                 }
                 centerNode = startParent.parentNode
@@ -450,17 +471,17 @@ var DOM = {
         }
         return elem
     },
-    getElementPrevious(elem,endElem){
+    getElementPrevious(elem,startElem,endElem){
         let childs = elem.childNodes,
             status = false,
             list = []
         for(let cc = 0; cc < childs.length; cc++){
             if(!this.equalParent(childs[cc],endElem)){
-                if(childs[cc].nodeType == Node.ELEMENT_NODE || childs[cc].textContent.trim()){
+                if((childs[cc].nodeType == Node.ELEMENT_NODE || childs[cc].textContent.trim()) && childs[cc] != startElem){
                     list.push(childs[cc])
                 }
             }else{  // 当前元素与最后节点的某个父级相等
-                if(childs[cc].nodeType == Node.ELEMENT_NODE && childs[cc] != endElem){
+                if(childs[cc].nodeType == Node.ELEMENT_NODE && childs[cc] != endElem && childs[cc] != startElem){
                     let previousData = this.getElementPrevious(childs[cc],endElem)
                     list = list.concat(previousData.list)
                     status = previousData.status
@@ -581,7 +602,7 @@ var DOM = {
         }
     },
     /********************************
-     * getSiblingsList: 判断元素的邻接点是否是列表ul、ol
+     * DOM.getSiblingsList: 判断元素的邻接点是否是列表ul、ol
      * elem：js元素
      * name: 匹配需要邻接点的tagName值
      * previousElementSibling: 前一个兄弟节点
@@ -606,7 +627,56 @@ var DOM = {
         return null
     },
     /********************************
-     * getFirstChild: 获取第一个nodeType==Node.ELEMENT_NODE的节点
+     * DOM.getSiblingsIndentList: 判断元素的邻接点li 的子元素是否含有ul或ol元素
+     * elem：js元素
+     * name: 需要匹配的ul/ol的tagName值
+     *********************************/
+    getSiblingsIndentList(elem,name){
+        let previous = elem.previousElementSibling,
+            next = elem.nextElementSibling,
+            list = null,
+            position = '',
+            other = []
+        
+        if(previous){
+            let childs = previous.childNodes
+            for(let c = 0; c < childs.length; c++){
+                if(childs[c].nodeType == Node.ELEMENT_NODE && childs[c].tagName.toLowerCase() == name){
+                    list = childs[c]
+                    position = 'previous'
+                    break
+                }
+            }
+        }
+        if(next){
+            let childs = next.childNodes
+            for(let c = 0; c < childs.length; c++){
+                if(childs[c].nodeType == Node.ELEMENT_NODE && childs[c].tagName.toLowerCase() == name){
+                    if(previous){
+                        let cchilds = childs[c].childNodes
+                        for(let cc = 0; cc < cchilds.length; cc++){
+                            if(cchilds[cc].nodeType == Node.ELEMENT_NODE && cchilds[cc].tagName.toLowerCase() == 'li'){
+                                other.push(cchilds[cc])
+                            }
+                        }
+                    }else{
+                        list = childs[c]
+                        position = 'next'
+                    }
+                    break
+                }
+            }
+        }
+        return {
+            previous:previous,
+            next:next,
+            list:list,
+            position:position,
+            other:other
+        }
+    },
+    /********************************
+     * DOM.getFirstChild: 获取第一个nodeType==Node.ELEMENT_NODE的节点
      * elem：js元素
      *********************************/
     getFirstChild(elem){
@@ -636,11 +706,16 @@ var DOM = {
      * elem：数组，其中每个元素为jQuery元素
      * return li数组（js）
      *********************************/
-    getParentLi(elem){
+    getParentLi(elem,scope = true){
         let li = null,
             list = []
         for(let i = 0 ; i < elem.length; i++){
-            li = this.getOuterParent(elem[i][0],['li','p'])
+            if(scope){
+                li = this.getOuterParent(elem[i][0],['li','p'])
+            }else{
+                let oneLi = this.getElementParent(elem[i][0],['li','p'])
+                li = [oneLi]
+            }
             if(li){
                 for (let l = 0; l < li.length; l++){
                     let status = false
@@ -658,6 +733,31 @@ var DOM = {
             }
         }
         return list
+    },
+    getAllElementStatus(elem){
+        if(elem instanceof Array){
+            let parent = elem[0][0].parentNode,
+                childs = parent.childNodes,
+                elemLength = 0,
+                status = true
+            for(let i = 1; i < elem.length; i++){
+                if(elem[i][0].parentNode != parent){
+                    status = false
+                }
+            }
+            if(status){
+                for(let i = 0; i < childs.length; i++){
+                    if(childs[i].nodeType == Node.ELEMENT_NODE){
+                        elemLength++
+                    }
+                }
+                if(elemLength != elem.length){
+                    status = false
+                }
+            }
+            return status
+        }
+        return false
     }
 }
 var Execute = {
@@ -756,6 +856,7 @@ var Execute = {
         let ul = changeElem.parentNode,
             position = this._getLiPosition(changeElem),
             next = ul.nextSibling,
+            style= ul.style.cssText,
             wrapStatus = true
         switch(position){
             case 'first':
@@ -800,7 +901,7 @@ var Execute = {
                     break
             }
         }else if(wrapStatus){
-            changeElem.outerHTML = changeElem.outerHTML.replace('<li','<'+name+'><li').replace('/li>','/li></'+name+'>')
+            changeElem.outerHTML = changeElem.outerHTML.replace(/^(<li)/,'<'+name+' style="'+style+'"><li').replace(/(\/li>)$/,'/li></'+name+'>')
         }
     },
     _wrapMiddleLi(changeElem,ul,next,name){
@@ -813,7 +914,7 @@ var Execute = {
             nex = null
         if(preElem){
             pre = document.createElement(relativeName)
-            pre.style = ul.style
+            pre.style = ul.style.cssText
             pre.appendChild(preElem)
             preElem = changeElem.previousElementSibling
         }
@@ -827,7 +928,7 @@ var Execute = {
 
         if(nextElem){
             nex = document.createElement(relativeName)
-            nex.style = ul.style
+            nex.style = ul.style.cssText
             nex.appendChild(nextElem)
             nextElem = changeElem.nextElementSibling
         }
@@ -846,8 +947,233 @@ var Execute = {
             ul.parentNode.appendChild(changeElem)
         }
         ul.parentNode.removeChild(ul)
-    }
+    },
     /***wrapLi: 包装成li end**************************************************************/
+    /***indent outdent start**************************************************************/
+    /********************************
+     * setIndent: 摄设置缩进
+     * elemValue：需要缩进的值：25 或  -25
+     * elemParent：被缩进的元素，数组形式，每个元素为js元素
+     * 如果当前是P标签，则直接缩进
+     * 如果当前是LI标签，需将内容放置到另一个ul里面
+     *********************************/
+    setIndent(elemValue,elemParent,TEXT){
+        for (let io = 0; io < elemParent.length; io++){
+            let eptag = elemParent[io].tagName.toLowerCase()
+            switch(eptag){
+                case 'p':
+                    this.setIndentValue(elemValue,elemParent[io],TEXT)
+                    break
+                case 'li':
+                    let ul = elemParent[io].parentNode,
+                        name = ul.tagName.toLowerCase(),
+                        position = Execute._getLiPosition(elemParent[io])  // 获取Li处在ul/ol中的位置
+                        
+                    switch(elemValue > 0){
+                        case true:
+                            Execute.setLiIndentIn(elemParent[io],ul,name,elemValue,position,TEXT)
+                            break
+                        default:  // 缩进  -25
+                            Execute.setLiIndentOut(elemParent[io],ul,name,elemValue,position,TEXT)
+                            break
+                    }
+                    break
+            }
+        }
+    },
+    /********************************
+     * setLiIndentIn: 设置LI缩进 25
+     * elem: 当前元素li
+     * ul: 当前元素的父级元素ul/ol
+     * name: 当前元素的父级元素ul/ol的标签名
+     * elemValue: 25
+     * position: Li(elem)处在父级元素ul/ol中的位置
+     * 目的：将elem放置到另一个ul里面
+     *********************************/
+    setLiIndentIn(elem,ul,name,elemValue,position,TEXT){
+        // 判断元素的邻接点li 的子元素是否含有ul或ol元素
+        let indentListData = DOM.getSiblingsIndentList(elem,name),
+            status = false
+        if(indentListData.list){
+            switch(indentListData.position){
+                case 'previous':
+                    indentListData.list.appendChild(elem)
+                    break
+                case 'next':
+                    indentListData.list.insertBefore(elem,indentListData.list.childNodes[0])
+                    break
+            }
+        }else{
+            let changeElem = elem
+
+            if(indentListData.previous){
+                indentListData.previous.appendChild(elem)
+            }else{
+                if(DOM.equalParent(ul.parentNode,ul)){  // !/(kitty-text-content)/g.test(ul.parentNode) && 
+                    changeElem = ul
+                    status = true
+                }else{
+                    ul.parentNode.insertBefore(elem,ul)
+                }
+            }
+            this.setIndentValue(elemValue,changeElem,TEXT)
+
+            if(!status){
+                let style = elem.style.cssText,
+                    innerHTML = elem.innerHTML
+                
+                elem.outerHTML = '<'+name+' style="'+style+'"><li>' + innerHTML + '</li></'+name+'>'
+            }
+        }
+        if(!status){
+            switch(position){
+                case 'one':
+                    ul.parentNode.removeChild(ul)
+                    break
+            }  
+        }    
+    },
+    /********************************
+     * setLiIndentOut: 设置LI缩进 -25
+     * elem: 当前元素li
+     * ul: 当前元素的父级元素ul/ol
+     * name: 当前元素的父级元素ul/ol的标签名
+     * elemValue: 25
+     * position: Li(elem)处在父级元素ul/ol中的位置
+     *********************************/
+    setLiIndentOut(elem,ul,name,elemValue,position,TEXT){
+        let ulParentTag = ul.parentNode.tagName.toLowerCase()
+
+        switch(ulParentTag){
+            case 'li':
+                this.setMultipleIndentOut(elem,ul,name,elemValue,position,TEXT)
+                break
+            default:
+                this.setSingleIndentOut(elem,ul,name,elemValue,position,TEXT)
+                break
+        }
+    },
+    setMultipleIndentOut(elem,ul,name,elemValue,position,TEXT){
+        let outerParent = ul.parentNode.parentNode,
+            upnext = ul.parentNode.nextElementSibling
+        switch(position){
+            case 'first':// ul 即是li的子元素，将elem作为ul的后一个兄弟节点
+                outerParent.insertBefore(elem,ul.parentNode)
+                break
+            case 'middle':
+                this.setMiddleLiIndentOut(elem,ul,name,elemValue,TEXT)
+                break
+            case 'end':// ul 即是li的子元素，将elem作为ul的后一个兄弟节点
+                if(upnext){
+                    outerParent.insertBefore(elem,upnext)
+                }else{
+                    outerParent.appendChild(elem)
+                }
+                break
+            case 'one':// ul 即是li的子元素，将elem作为ul的后一个兄弟节点
+                if(upnext){
+                    outerParent.insertBefore(elem,upnext)
+                }else{
+                    outerParent.appendChild(elem)
+                }
+                ul.parentNode.removeChild(ul)
+                break
+        }
+    },
+    setSingleIndentOut(elem,ul,name,elemValue,position,TEXT){
+        let unext = ul.nextSibling
+            
+        switch(position){
+            case 'first':
+                ul.parentNode.insertBefore(elem,ul)
+                elem.outerHTML = elem.outerHTML.replace('<li','<p').replace('/li>','/p>')
+                break
+            case 'middle':
+                self.setMiddleLiIndentOut(elem,ul,name,elemValue,TEXT)
+                break
+            case 'end':
+                if(unext){
+                    ul.parentNode.insertBefore(elem,unext)
+                }else{
+                    ul.parentNode.appendChild(elem)
+                }
+                elem.outerHTML = elem.outerHTML.replace('<li','<p').replace('/li>','/p>')
+                break
+            case 'one':
+                ul.parentNode.insertBefore(elem,ul)
+                elem.outerHTML = elem.outerHTML.replace('<li','<p').replace('/li>','/p>')
+                ul.parentNode.removeChild(ul)
+                break
+        }
+    },
+    setMiddleLiIndentOut(elem,ul,name,elemValue,TEXT){
+        let ulParentTag = ul.parentNode.tagName.toLowerCase(),
+            outerParent = ul.parentNode.parentNode,
+            upnext = ul.parentNode.nextElementSibling,
+
+            newUl = document.createElement(name),
+            nextElementArray = [],
+            nextElem = elem.nextElementSibling
+        while(nextElem){
+            nextElementArray.push(nextElem)
+            nextElem = nextElem.nextElementSibling
+        }
+        newUl.style = ul.style.cssText
+        for(let n = 0; n < nextElementArray.length; n++){
+            newUl.appendChild(nextElementArray[n])
+        }
+        switch(ulParentTag){
+            case 'li':
+                if(upnext){
+                    let marginLeft = DOM.getHtmlRem(parseFloat(DOM.getCssProperty(ul.parentNode,'margin-left'))),
+                        lastValue = Execute.getIndentValue(elemValue,elem,TEXT,ul.parentNode,false)
+                    newUl.style.marginLeft = -lastValue + 'rem'
+                    outerParent.insertBefore(elem,upnext)
+                    elem.appendChild(newUl)
+                    elem.style.marginLeft = marginLeft + 'rem'
+                }else{
+                    outerParent.appendChild(elem)
+                    elem.appendChild(newUl)
+                }
+                break
+            default:
+                let ulnext = ul.nextSibling,
+                    textAlign = DOM.getCssProperty(ul,'text-align')
+                if(ulnext){
+                    ul.parentNode.insertBefore(newUl,ulnext)
+                }else{
+                    ul.parentNode.appendChild(newUl)
+                }
+                elem.style = ul.style.cssText
+                ul.parentNode.insertBefore(elem,newUl)
+                elem.outerHTML = elem.outerHTML.replace('<li','<p').replace('/li>','/p>')
+                break
+        }
+    },
+    setIndentValue(elemValue,elem,TEXT){
+        let lastValue = this.getIndentValue(elemValue,elem,TEXT,elem)
+        elem.style.marginLeft = lastValue + 'rem'
+    },
+    getIndentValue(elemValue,elem,TEXT,elemParent,status = true){
+        let nvalue = 0,
+            lastValue = TEXT.getRemValue(elemValue),
+            middle = elem
+        if(status){
+            while(middle){
+                nvalue = DOM.getHtmlRem(parseFloat(DOM.getCssProperty(middle,'margin-left')))
+                lastValue += nvalue
+                if(middle == elemParent){
+                    break
+                }
+                middle = middle.parentNode
+            }
+        }
+        if(Math.abs(lastValue * (750 / 16)) < 5){
+            lastValue = 0
+        }
+        return lastValue
+    }
+    /***indent outdent end**************************************************************/
 }
 export {
     DOM,
