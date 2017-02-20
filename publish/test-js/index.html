@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>首页</title>
+<link type="text/css" rel="stylesheet" href="/static/css/init.css" />
+<style>
+    ul {
+
+    }
+    li {
+        width:100px;
+        height:100px;
+        line-height:100px;
+        float:left;
+        border:1px solid red;
+        color:#333;
+        text-align:center;
+    }
+    .layer-left {
+        width:100px;
+        height:100px;
+        float:left;
+        background:#ff0;
+    }
+    .layer-right{
+        height:100px;
+        background:#f0f;
+    }
+    .level-left{
+        width:100px;
+        height:100px;
+        float:left;
+        background:#f00;
+    }
+    .table{
+        width:100%;
+        display:table;
+    }
+    .table-row{
+        display:table-row;
+    }
+    .table-cell {
+        height:100px;
+        display:table-cell;
+    }
+    .green{
+        background:#0f0;
+    }
+    .blue{
+        background:#00f;
+    }
+    .pink {
+        background:pink;
+    }
+    .red {
+        background:#f00;
+    }
+    .flex{
+        height:400px;
+        display:flex;
+        flex-direction:row;
+        flex-wrap:nowrap;
+        flex-flow:row nowrap;
+        justify-content:center;
+        align-items:flex-start;
+        /*align-items:stretch;*/
+    }
+    .flex > div {
+        width:100px;
+        height:100px;
+        flex-grow:1;
+    }
+    .flex > .red {
+        width:50px;
+        height:50px;
+    }
+    .flex > .green {
+        width:200px;
+        height:200px;
+        align-self:flex-end;
+    }
+</style>
+</head>
+<body>
+    <div id="main">
+        <div class="layer">
+            <div class="layer-left">left</div>
+            <div class="layer-right">right</div>
+        </div>
+        <!--<div class="level">
+            <div class="level-left">level-left</div>
+            <div class="level-right">level-right</div>
+        </div>-->
+        <div class="table">
+            <div class="table-row">
+                <div class="table-cell green">green</div>
+                <div class="table-cell blue">blue</div>
+                <div class="table-cell pink">pink</div>
+            </div>
+        </div>
+        <div class="flex">
+            <div class="red"></div>
+            <div class="green"></div>
+            <div class="blue"></div>
+        </div>
+    </div>
+<script type="text/javascript" src="http://localhost:9000/static/js/lib/vue2.1.10.js"></script>
+<script type="text/javascript">
+    var a = 1
+    function a (){
+        console.log('a')
+    }
+    console.log(a)
+
+    var User = {
+        count:1,
+        getCount:function(){
+            return this.count;
+        }
+    }
+    console.log(User.getCount());
+    var func = User.getCount;
+    console.log(func())
+</script>
+</body>
+</html>
