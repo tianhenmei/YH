@@ -273,7 +273,8 @@
                 linkChangeStatus:false,
                 color:'#666666',
                 bgColor:'rgba(0,0,0,0)',
-                link:''
+                link:'',
+                content:"<p>It's a test</p>"
             }
         },
         props:['props'],
@@ -526,9 +527,18 @@
                                 }
                                 DOM.restoreRange()
                             }else{
-                                elem.css(data.styleName,elemValue)
+                                switch(name){
+                                    case 'link':
+                                    case 'unlink':
+                                        break
+                                    default:
+                                        elem.css(data.styleName,elemValue)
+                                        break
+                                }
                             }
                     }  // switch
+                    this.content = this.$el.getElementsByClassName('kitty-text-content')[0].innerHTML
+                    MW.bus.$emit('updateContent',this.content,this.$el.id)
                 }else if(hasLi){
                     li.find('.yh-tedit-list,.yh-tedit-list-parent').show()
                 }
@@ -679,7 +689,7 @@
             options = options || {}
             return {
                 id:options.id ? options.id : '',
-                content: options.content || "<ol style=\"text-align:left;\"><li>It's a test.<ol style=\"margin-left: 1.06666rem;\"><li>hello</li><li>dagou</li></ol></li><li>waoefnaeojg</li><li>xxnxixn</li></ol>",
+                content: options.content || "<p>It's a test</p>",//"<ol style=\"text-align:left;\"><li>It's a test.<ol style=\"margin-left: 1.06666rem;\"><li>hello</li><li>dagou</li></ol></li><li>waoefnaeojg</li><li>xxnxixn</li></ol>",
                 position:{
                     left:0,
                     top:0

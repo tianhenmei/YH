@@ -98,7 +98,7 @@ var DOM = {
         while(elem && !elem.id) {
             if(condition){
                 condition.forEach(function(con){
-                    if(elem.nodeType == Node.ELEMENT_NODE && elem.tagName.toLowerCase() == con){
+                    if(elem.nodeType == Node.ELEMENT_NODE && elem.tagName.toLowerCase() == con && elem.className != 'kitty-text-content'){
                         cc = true
                     }
                 })
@@ -129,7 +129,7 @@ var DOM = {
         while(elem && !elem.id) {
             if(condition){
                 condition.forEach(function(con){
-                    if(elem.nodeType == Node.ELEMENT_NODE && elem.tagName.toLowerCase() == con){
+                    if(elem.nodeType == Node.ELEMENT_NODE && elem.tagName.toLowerCase() == con && elem.className != 'kitty-text-content'){
                         cc = true
                     }
                 })
@@ -597,7 +597,7 @@ var DOM = {
         if(!range){
             return null
         }else{
-            let parent = this.getElementParent(range.startContainer,['p','li'])
+            let parent = this.getElementParent(range.startContainer,['p','div','li'])
             return parent
         }
     },
@@ -711,9 +711,9 @@ var DOM = {
             list = []
         for(let i = 0 ; i < elem.length; i++){
             if(scope){
-                li = this.getOuterParent(elem[i][0],['li','p'])
+                li = this.getOuterParent(elem[i][0],['li','p','div'])
             }else{
-                let oneLi = this.getElementParent(elem[i][0],['li','p'])
+                let oneLi = this.getElementParent(elem[i][0],['li','p','div'])
                 li = [oneLi]
             }
             if(li){
@@ -843,12 +843,12 @@ var Execute = {
                     siblingsData.elem.appendChild(changeElem)
                 }
             }
-            changeElem.outerHTML = changeElem.outerHTML.replace('<p','<li').replace('/p>','/li>')
+            changeElem.outerHTML = changeElem.outerHTML.replace(/(<p)|(<div)/g,'<li').replace(/(\/p>)|(\/div>)/g,'/li>')
         }else{
             if(changeElem.tagName.toLowerCase() == 'li'){
                 this._wrapElemLi(changeElem,name)
             }else{
-                changeElem.outerHTML = changeElem.outerHTML.replace('<p','<'+name+'><li').replace('/p>','/li></'+name+'>')
+                changeElem.outerHTML = changeElem.outerHTML.replace(/(<p)|(<div)/g,'<'+name+'><li').replace(/(\/p>)|(\/div>)/g,'/li></'+name+'>')
             }
         }
     },
@@ -961,6 +961,7 @@ var Execute = {
         for (let io = 0; io < elemParent.length; io++){
             let eptag = elemParent[io].tagName.toLowerCase()
             switch(eptag){
+                case 'div':
                 case 'p':
                     this.setIndentValue(elemValue,elemParent[io],TEXT)
                     break

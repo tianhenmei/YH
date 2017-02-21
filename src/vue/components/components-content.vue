@@ -137,6 +137,10 @@
             MW.bus.$on('blurSelection',() => {
                 that.drag.status = true
             })
+            MW.bus.$on('updateContent',(content,elemID) => {
+                let index = that.getIndex(elemID,that)
+                that.pages[that.currentPage].elements[index].props.content = content
+            })
         },
         mounted(){
             this.getPageData('10002',this);
