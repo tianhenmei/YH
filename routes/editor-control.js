@@ -225,6 +225,7 @@ function writeJS(data){
                     '$(".page").removeClass('+
                         'data.page[data.direction.y].now+" "+data.page[data.direction.y].last +'+
                         '" "+data.page[od].now+" "+data.page[od].last);\n'+
+                    '$(".page"+data.last).addClass("hide")\n'+
                     'data.isMoving = false;\n'+
                 '},500);\n'+
             '};\n';
@@ -270,9 +271,9 @@ function writeHTML(pageHTML){
             '</head>'+'\n'+
             '<body>'+'\n'+
                 '<div class="main">'+'\n'+
-                    pageHTML + '\n'+
+                    pageHTML.replace(/[’‘]/g,'\'') + '\n'+
                 '</div>'+ '\n'+
-                '<script type="text/javascript" src="http://192.168.0.110:9000/static/js/lib/jquery.1.10.1.min.js"></script>'+'\n'+
+                '<script type="text/javascript" src="/static/js/lib/jquery.1.10.1.min.js"></script>'+'\n'+
                 '<script type="text/javascript" src="./js/index.js"></script>'+'\n'+
             '</body>'+'\n'+
         '</html>'+

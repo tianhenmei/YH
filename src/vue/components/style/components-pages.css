@@ -8,14 +8,14 @@
     left:0;
     top:60px;
 }
-[components-pages] ul {
+[components-pages] ul.components-pages-list {
     width: 180px;
     padding:10px 0 0 0;
     position:absolute;
     left:0;
     top:0;
 }
-[components-pages] ul li[page]{
+[components-pages] ul.components-pages-list li[page]{
     width:180px;
     padding-bottom: 10px;
     position:relative;

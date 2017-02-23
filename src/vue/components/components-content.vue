@@ -40,7 +40,7 @@
                 <p></p>
             </div>
             <div class="yh-selectOpera yh-selection">
-                <span id="delete">x</span>
+                <span id="delete" @click.stop="removeElement">x</span>
                 <span id="complate">√</span>
             </div>
 
@@ -103,7 +103,8 @@
                 distance:15,
                 title:"It's title",
                 count:1,
-                pageAnimation:'move'
+                pageAnimation:'move',
+                moveStatus:false
             }
         },
         created(){
@@ -137,9 +138,15 @@
             MW.bus.$on('blurSelection',() => {
                 that.drag.status = true
             })
-            MW.bus.$on('updateContent',(content,elemID) => {
+            MW.bus.$on('updateContent',(content,styleJSON,elemID) => {
                 let index = that.getIndex(elemID,that)
-                that.pages[that.currentPage].elements[index].props.content = content
+
+                if(!MW.moveStatus){
+                    that.pages[that.currentPage].elements[index].props.content = content
+                    if(Object.prototype.toString.call(styleJSON) == '[object Object]'){
+                        that.pages[that.currentPage].elements[index].props.style = styleJSON
+                    }
+                }
             })
         },
         mounted(){
@@ -209,16 +216,26 @@
                 this.initColorEvent()
                 this.initSizeChangeEvent()
             },
+            removeElement(e){
+                var elem = $('.setting'),
+                    elemID = elem.attr('id');
+                
+                var index = this.getIndex(elemID,this)
+                this.pages[this.currentPage].elements.splice(index,1)
+                // elem.remove();
+                $('.yh-selection').hide()
+            },
             initRemoveEvent(){
-                var self = this;
-                $(document).on('click','#delete',function(e){
-                    var elem = $('.setting'),
-                        elemID = elem.attr('id');
+                // var self = this;
+                // $(document).on('click','#delete',function(e){
+                //     e.stopPropagation()
+                //     var elem = $('.setting'),
+                //         elemID = elem.attr('id');
                     
-                    var index = self.getIndex(elemID,self)
-                    self.pages[self.currentPage].elements.splice(index,1)
-                    elem.remove();
-                });
+                //     var index = self.getIndex(elemID,self)
+                //     self.pages[self.currentPage].elements.splice(index,1)
+                //     elem.remove();
+                // });
             },
             initColorEvent(){
                 let input = $('input[type="color"]')
@@ -329,6 +346,7 @@
                                 'display':'block'
                             });
                         }
+                        MW.moveStatus = true
                         end.x = e.clientX
                         end.y = e.clientY
                         switch(type){
@@ -418,6 +436,7 @@
                     move_box.hide()
                     down = false
                     isMoving = false
+                    MW.moveStatus = false
                 })
             },
             /* 
@@ -658,6 +677,7 @@
                                         break;
                                     case 'text':
                                         self.pages[i].elements[j].yh_module = YHText;
+                                        self.pages[i].elements[j].props.content = self.pages[i].elements[j].props.content.replace(/(\~\|)/g,'"').replace(/[’‘]/g,'\'')
                                         break;
                                     case 'button':
                                         self.pages[i].elements[j].yh_module = YHButton;
@@ -707,12 +727,19 @@
                                 for(let j = 0; j < data.pages[i].elements.length; j++){
                                     data.pages[i].elements[j].yh_module = null;
                                     data.pages[i].elements[j].props.classname = document.getElementById(data.pages[i].elements[j].yh_id).className.replace('setting','');
+                                    switch(data.pages[i].elements[j].module){
+                                        case 'text':
+                                            data.pages[i].elements[j].props.content = data.pages[i].elements[j].props.content.replace(/"/g,'~|')
+                                            break
+                                    }
                                 }
                             }
                             break;
+                        case 'drag':
+                            break
                         default:
-                            data[attr] = this.$data[attr];
-                            break;
+                            data[attr] = this.$data[attr]
+                            break
                     }
                 }
                 $.ajax({
@@ -722,8 +749,8 @@
                         id:10002,
                         name:'test',
                         style:style,
-                        html:totalElement.html(),
-                        json:JSON.stringify(data).replace('\'','’'),
+                        html:totalElement.html().replace(/\'/g,'‘'),
+                        json:JSON.stringify(data).replace(/\'/g,'‘'),
                         js:JSON.stringify({
                             pageAnimation:this.pageAnimation
                         }),

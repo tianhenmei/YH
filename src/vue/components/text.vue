@@ -8,7 +8,8 @@
             :style="props.style" 
             @dblclick="focusSelection" 
             @mousedown="deleteLastRange" 
-            @mouseup.stop="saveSelectionRange" 
+            @mouseup="saveSelectionRange"
+            @blur="contentChange"
             v-html="props.content">
         
         </div>
@@ -273,8 +274,7 @@
                 linkChangeStatus:false,
                 color:'#666666',
                 bgColor:'rgba(0,0,0,0)',
-                link:'',
-                content:"<p>It's a test</p>"
+                link:''
             }
         },
         props:['props'],
@@ -413,7 +413,7 @@
                                 Execute.setIndent(elemValue,elemParent,this)
                             }else{
                                 let cParent = DOM.getCursorPosition()
-                                if(cParent.attributes['yh-name']){
+                                if(!cParent || cParent.attributes['yh-name']){
                                     alert('* 请先选择需要缩进或伸出的元素！')
                                 }else{
                                     Execute.setIndent(elemValue,[cParent],this)
@@ -501,7 +501,7 @@
                                         this.cmd.link.blank = status
 
                                         if(DOM.getChildNodesLength(firstCommonParent[0]) == elem.length && (firstCommonParent.attr('style')+'').indexOf(data.styleName) != -1){
-                                            firstCommonParent.html('<a href="'+elemValue+'" '+linkAttr+'>'+elem[i].html()+'</a>')
+                                            firstCommonParent.html('<a href="'+elemValue+'" '+linkAttr+'>'+firstCommonParent.html()+'</a>')
                                         }else{
                                             for (let i = 0; i < elem.length; i++){
                                                 elem[i].html('<a href="'+elemValue+'" '+linkAttr+'>'+elem[i].html()+'</a>')
@@ -537,8 +537,14 @@
                                 }
                             }
                     }  // switch
-                    this.content = this.$el.getElementsByClassName('kitty-text-content')[0].innerHTML
-                    MW.bus.$emit('updateContent',this.content,this.$el.id)
+                    let textContent = this.$el.getElementsByClassName('kitty-text-content')[0]
+                    this.content = textContent.innerHTML
+                    MW.bus.$emit(
+                        'updateContent',
+                        this.content,
+                        Execute.getStyleJSON(textContent.style.cssText),
+                        this.$el.id
+                    )
                 }else if(hasLi){
                     li.find('.yh-tedit-list,.yh-tedit-list-parent').show()
                 }
@@ -548,21 +554,39 @@
                 MW.bus.$emit('focusSelection')
             },
             saveSelectionRange(e){
-                if(!MW.textEditing && DOM.getSelectionRange()){
-                    DOM.saveRange()
-                }else{
-                    // DOM.removeRange()
-                }
-                // 展示编辑层，恢复当前选中元素的编辑数据
-                this.recoveryEditData($(e.target))
+                // if(!MW.moveStatus){
+                //     e.stopPropagation()
+                // }
+                // if(!MW.moveStatus){
+                    if(!MW.textEditing && DOM.getSelectionRange()){
+                        DOM.saveRange()
+                    }else{
+                        // DOM.removeRange()
+                    }
+                    // 展示编辑层，恢复当前选中元素的编辑数据
+                    this.recoveryEditData($(e.target))
+                // }
             },
             deleteLastRange(e) {
+                // if(!MW.moveStatus){
+                //     e.stopPropagation()
+                // }
                 DOM.saveRange()
                 // 展示编辑层，恢复当前选中元素的编辑数据
                 // var range = this.getSelectionRange()
                 DOM.restoreRange()
                 this.recoveryEditData()
                 // DOM.removeRange()
+            },
+            contentChange(e){
+                let target = e.target,
+                    html = target.innerHTML
+                MW.bus.$emit(
+                    'updateContent',
+                    html,
+                    Execute.getStyleJSON(target.style.cssText),
+                    target.parentNode.id
+                )
             },
             setCmd(styleJSON){
                 for( let s in styleJSON){
@@ -722,6 +746,14 @@
     [kitty-text] .kitty-text-content ol{
         list-style:	decimal inside none;
     }
+    [kitty-text] .kitty-text-content ul > li > ul > li,
+    [kitty-text] .kitty-text-content ul > li > ul{
+        list-style:	circle inside none;
+    }
+    [kitty-text] .kitty-text-content ul > li > ul > li > ul > li,
+    [kitty-text] .kitty-text-content ul > li > ul > li > ul{
+        list-style:	square inside none;
+    }
     [kitty-text] .kitty-text-content ul > li.style-none,
     [kitty-text] .kitty-text-content ol > li.style-none{
         list-style:none;
@@ -736,7 +768,8 @@
         position: absolute;
         left: 50%;
         /*top: -76px;*/
-        top:-54px;
+        /*top:-54px;*/
+        top:-51px;
         background: #eff2f7;
         z-index: 9999;
         margin: 0 0 0 -137px;
@@ -887,6 +920,14 @@
     [kitty-text] .yh-edit-layer li.yh-edit-color{
         /*width: 99px;*/
         width:30px;
+        z-index: 10;
+    }
+    [kitty-text] .yh-edit-layer li.yh-edit-color[yh-name="backgroundColor"]{
+        z-index:9;
+    }
+    [kitty-text] .yh-edit-layer li.yh-edit-color[yh-name="backgroundColor"] .yh-tedit-list,
+    [kitty-text] .yh-edit-layer li.yh-edit-color[yh-name="color"] .yh-tedit-list{
+        top: 100%;
     }
     [kitty-text] .yh-edit-layer li.yh-edit-color .yh-tedit p{
         width:20px;
@@ -989,5 +1030,9 @@
     .white-bg{
         background:#fff;
         color:#666;
+    }
+
+    .setting {
+        z-index: 9999;
     }
 </style>

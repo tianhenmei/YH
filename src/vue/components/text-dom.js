@@ -225,6 +225,9 @@ var DOM = {
             previousNode = elem.previousSibling
             if(!firstText && !endText) {
                 if(rangeStatus == 'center' || rangeStatus == false){
+                    if(!parent){
+                        return null
+                    }
                     if(parent.innerHTML == fullText && !nextNode && !previousNode){
                         elem = $(parent)
                     }else{
@@ -1173,8 +1176,21 @@ var Execute = {
             lastValue = 0
         }
         return lastValue
-    }
+    },
     /***indent outdent end**************************************************************/
+    getStyleJSON(styleText){
+        let styleArray = styleText.split(';'),
+            styleJSON = {}
+        for(let s = 0; s < styleArray.length; s++){
+            let one = styleArray[s].trim(),
+                arr = []
+            if(one){
+                arr = one.split(':')
+                styleJSON[arr[0].trim()] = arr[1].trim()
+            }
+        }
+        return styleJSON
+    },
 }
 export {
     DOM,

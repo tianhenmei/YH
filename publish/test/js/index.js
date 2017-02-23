@@ -66,6 +66,7 @@ $(".page"+data.now).removeClass("hide").addClass(data.page[data.direction.y].now
 $(".page"+data.last).removeClass("hide").addClass(data.page[data.direction.y].last);
 setTimeout(function(){
 $(".page").removeClass(data.page[data.direction.y].now+" "+data.page[data.direction.y].last +" "+data.page[od].now+" "+data.page[od].last);
+$(".page"+data.last).addClass("hide")
 data.isMoving = false;
 },500);
 };

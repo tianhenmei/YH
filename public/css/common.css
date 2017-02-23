@@ -23,6 +23,22 @@ html,body,.main {
     left:0;
     top:0;
 }
+[kitty-text] .kitty-text-content ul > li,
+[kitty-text] .kitty-text-content ul{
+    list-style:	disc inside none;
+}
+[kitty-text] .kitty-text-content ol > li,
+[kitty-text] .kitty-text-content ol{
+    list-style:	decimal inside none;
+}
+[kitty-text] .kitty-text-content ul > li > ul > li,
+[kitty-text] .kitty-text-content ul > ul{
+    list-style:	circle inside none;
+}
+[kitty-text] .kitty-text-content ul > li > ul > li > ul > li,
+[kitty-text] .kitty-text-content ul > li > ul > li > ul{
+    list-style:	square inside none;
+}
 /*图片********************************************/
 [kitty-image]{
     position: absolute;

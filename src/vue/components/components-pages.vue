@@ -1,6 +1,6 @@
 <template>
     <div components-pages>
-        <ul>
+        <ul class="components-pages-list">
             <li class="clearfix" v-for="(page,index) in pages" :page="index" @mouseenter="pageenter" @mouseleave="pageleave" @click.stop.prevent="changePage">
                 <div class="yh-page-edit">
                     {{index+1}}

@@ -7,6 +7,7 @@ module.exports = {
     bus:bus,
     currentPage:currentPage,
     isMoving:isMoving,
+    moveStatus:false,
     textEditing:false,
     pageData:{
         elements:[],
