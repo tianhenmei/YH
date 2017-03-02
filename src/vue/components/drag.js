@@ -174,6 +174,16 @@ class Drag{
             self.ismoving = true;
         }
     }
+    getParentTop(elem){
+        if(elem.parents('[yh-tab]').length > 0){
+            let tab = elem.parents('[yh-tab]').eq(0),
+                tabTitle = tab.children('[yh-tab-title]'),
+                top = this.getPointHeight(tabTitle) + this.getPointValue(tab,'top')
+            return top
+        }else{
+            return 0
+        }
+    }
     mousedown(x,y,self){
         self.contain_position.x = self.contain.offset().left
         self.contain_position.y = self.contain.offset().top
@@ -181,7 +191,7 @@ class Drag{
         self.data.width = self.getPointOuterWidth(self.elem)
         self.data.height = self.getPointOuterHeight(self.elem)
         self.data.left = self.getPointValue(self.elem,'left')
-        self.data.top = self.getPointValue(self.elem,'top')
+        self.data.top = self.getPointValue(self.elem,'top') + self.getParentTop(self.elem)
         self.data.x = self.elem.offset().left
         self.data.y = self.elem.offset().top
 

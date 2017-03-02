@@ -14,6 +14,10 @@
                     <span class="yh-edit-word">按钮</span>
                     <span class="yh-edit-icon"></span>
                 </li>
+                <li components-tab @click.prevent.stop="addComponents">
+                    <span class="yh-edit-word">tab切换</span>
+                    <span class="yh-edit-icon"></span>
+                </li>
                 <li components-form @click.prevent.stop="addComponents">
                     <span class="yh-edit-word">表单</span>
                     <span class="yh-edit-icon"></span>

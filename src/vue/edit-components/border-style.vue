@@ -1,0 +1,51 @@
+<template>
+    <yh-edit-options :options="optionsData" @setValue="setValue"></yh-edit-options>
+</template>
+<script>
+    import YHEditOptions from './yh-edit-options.vue'
+    export default {
+        components:{
+            'yh-edit-options':YHEditOptions,
+        },
+        props:['options'],
+        data(){
+            return {
+                optionsData:{
+                    name:'边框样式',
+                    stylename:'border-style',
+                    unit:'',
+                    realunit:'',
+                    list:['无','实线','虚线','点状'],
+                    realList:['none','solid','dashed','dotted'],
+                    isChild:true,
+                    style:this.options
+                }
+            }
+        },
+        methods:{
+            setValue(name,value){
+                this.$emit('setValue',name,value)
+            }
+        }
+    }
+</script>
+
+<style>
+    .yh-edit-border-style {
+        width:65px;
+    }
+    .yh-edit-border-style .yh-edit-text{
+        display:none;
+    }
+    .yh-edit-border-style .yh-edit-value{
+        width:40px;
+    }
+    .yh-edit-choose .yh-edit-list > ul > li,
+    .yh-edit-choose .yh-edit-list > ul,
+    .yh-edit-choose .yh-edit-list{
+        width:100px;
+    }
+    .yh-edit-choose .yh-edit-list {
+        width:108px;
+    }
+</style>

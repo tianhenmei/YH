@@ -148,6 +148,40 @@
     left:23px;
 }
 
+.yh-edit-layer div.yh-edit-tab {
+    width: 100%;
+    /*height: auto;*/
+    height: 104px;
+    position:relative;
+    /*overflow: hidden;*/
+}
+.yh-edit-layer div.yh-edit-tab [yh-tab-title] > div.yh-tab-one{
+    width:80px;
+    height:24px;
+    line-height:24px;
+    font-size:14px;
+    text-align:center;
+    color:#666;
+    background:#fff;
+    cursor:pointer;
+}
+.yh-edit-layer div.yh-edit-tab [yh-tab-title]{
+    box-shadow: 0 0px 10px #efefef;
+}
+.yh-edit-layer div.yh-edit-tab [yh-tab-title]  > div.yh-tab-one:hover{
+    background:#efefef;
+}
+.yh-edit-layer div.yh-edit-tab [yh-tab-content] .yh-tab-active .yh-edit-tab-content {
+    /*background:#efefef;*/
+}
+.yh-edit-layer div.yh-edit-tab [yh-tab-title]  > div.yh-tab-one.yh-tab-active{
+    color:#fff;
+    background:#ff0084;
+}
+
+
+
+
 /*文本********************************************/
 [kitty-text]{
     position: absolute;

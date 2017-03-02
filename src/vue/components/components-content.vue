@@ -13,10 +13,10 @@
             <div class="yh-page-edit">
                 <ul>
                     <li edit="background-color">
-                        <input type="color" name="backgroundColor" />
+                        <input type="color" mold="backgroundColor" />
                     </li>
                     <li edit="background-image">
-                        <input type="file" content="src" accept="image/*" name="backgroundImage" />
+                        <input type="file" content="src" accept="image/*" mold="backgroundImage" />
                     </li>
                 </ul>
             </div>
@@ -54,10 +54,14 @@
     import Drag from './drag.js'
     import YHImage from './image.vue'
     import YHText from './text.vue'
+    import YHButton from './button.vue'
+    import YHTab from './tab.vue'
 
     const Elements = {
         'components-text':YHText,
         'components-image':YHImage,
+        'components-button':YHButton,
+        'components-tab':YHTab
         // 'components-button':YHButton,
         // 'components-form':YHForm,
         // 'components-audio':YHAudio,
@@ -84,7 +88,7 @@
                                     left:0,
                                     top:0
                                 },
-                                src:'http://localhost:9000/static/images/Helen.png',
+                                src:MW.host+'static/images/Helen.png',
                                 href:''
                             }
                         }*/],
@@ -139,12 +143,13 @@
                 that.drag.status = true
             })
             MW.bus.$on('updateContent',(content,styleJSON,elemID) => {
-                let index = that.getIndex(elemID,that)
+                let index = that.getIndex(elemID,that),
+                    elements = that.getElementsData(elemID,that)
 
                 if(!MW.moveStatus){
-                    that.pages[that.currentPage].elements[index].props.content = content
+                    elements[index].props.content = content
                     if(Object.prototype.toString.call(styleJSON) == '[object Object]'){
-                        that.pages[that.currentPage].elements[index].props.style = styleJSON
+                        elements[index].props.style = styleJSON
                     }
                 }
             })
@@ -198,7 +203,7 @@
                     outer:'.yh-components-content',
                     contain:'.yh-content-center',
                     move_box:'#yh-move-box',
-                    elemPath:'.yh-content-center .page > div',
+                    elemPath:'.yh-content-center .page div[id]',
                     distance:15,
                     mousedownCallback:self.mousedownCallback,
                     firstMoveCallback:self.hideEditLayer,
@@ -429,7 +434,8 @@
                         self.pages[self.currentPage].elements[index].props.style.transform = last.transform
                         MW.isMoving = true
                         self.distance = 0
-                        self.settingBox(move_box)
+                        // self.settingBox(move_box)
+                        self.addSettingBox(move_box)
                         self.distance = distance
                         // self.mousedownCallback($('.yh-content-center'),elem)
                     }
@@ -494,7 +500,7 @@
                 return angle;
             },
             colorChange(self,that){
-                let name = that.attr('name')
+                let name = that.attr('mold')
                 let color = that.val()
                 
                 self.pages[self.currentPage]['background'][name] = color
@@ -504,22 +510,24 @@
                 fileData.append('files',file,file.name);
                 $.ajax({
                     type:'post',
-                    url:'http://10.1.193.233:9000/editor/upload',
+                    url:MW.host+'editor/upload',
                     data:fileData,
                     dataType: 'JSON',  
                     cache: false,  
                     processData: false,  
                     contentType: false,
                     success(data){
-                        var name = that.attributes['name'].value
+                        var name = that.attributes['mold'].value
                         switch(name){
                             case 'image':
                                 self.imageChange(self,data.content)
-                                break;
+                                break
+                            case 'button':
+                                self.setBackgroundImage(self,data.content,'yh-button')
+                                break
                             case 'backgroundImage':
-                                self.pages[self.currentPage].background.backgroundImage = "url(http://10.1.193.233:9000/"+data.content.path+")";
-                                // console.log(self.pages[self.currentPage].background.backgroundImage)
-                                break;
+                                self.pages[self.currentPage].background.backgroundImage = "url("+MW.host+data.content.path+")";
+                                break
                         }
                     },
                     error(error){
@@ -532,19 +540,61 @@
                     elemID = elem.attr('id'),
                     img = elem.find('.yh-image')[0],
                     index = self.getIndex(elemID,self);
-                img.src = 'http://10.1.193.233:9000/'+data.path
+                img.src = MW.host+data.path
                 img.onload = function(){
-                    self.settingBox(elem);
+                    // self.settingBox(elem)
+                    self.addSettingBox(elem)
                 };
 
                 self.pages[self.currentPage].elements[index].props.src = img.src;
                 self.pages[self.currentPage].elements[index].props.style.width = self.getRem(data.width);
                 self.pages[self.currentPage].elements[index].props.style.height = self.getRem(data.height);
             },
+            setBackgroundImage(self,data,childName){
+                let elem = $('.setting'),
+                    elemID = elem.attr('id'),
+                    child = elem.find('.'+childName)[0],
+                    index = self.getIndex(elemID,self),
+                    url = "url("+MW.host+data.path+")"
+
+                child.style.backgroundImage = url
+                child.onload = function(){
+                    // self.settingBox(elem)
+                    self.addSettingBox(elem)
+                }
+                
+                let elements = this.getElementsData(elemID,this)
+                
+                elements[index].props.style.backgroundImage = url
+                elements[index].props.style.backgroundSize = '100% 100%'
+                elements[index].props.style.width = self.getRem(data.width)
+                elements[index].props.style.height = self.getRem(data.height)
+            },
+            getElementsData(elemID,that){
+                let elements = null,
+                    elem = $('#'+elemID),
+                    currentPage = elem.closest('li[page]').length > 0 ? parseInt(elem.closest('li[page]').attr('page')) : that.currentPage
+                if(elem.parents('[yh-tab]').length > 0){
+                    let tab = elem.parents('[yh-tab]').eq(0),
+                        tabID = tab.attr('id'),
+                        tabContent = tab.children('[yh-tab-content]').children('.yh-tab-active'),
+                        tabIndex = tabContent.index(),
+                        elemIndex = that.getIndex(tabID,that),
+                        parentData = that.pages[currentPage].elements[elemIndex]
+                                     .props.base.tabs[tabIndex].elements
+                    
+                    elements = parentData
+                }else{
+                    elements = that.pages[currentPage].elements
+                }
+                return elements
+            },
             getIndex(elemID,self){
-                var index = 0
-                for(let i = 0; i < self.pages[self.currentPage].elements.length; i++){
-                    if(self.pages[self.currentPage].elements[i].yh_id == elemID){
+                let index = 0,
+                    elements = self.getElementsData(elemID,self)
+
+                for(let i = 0; i < elements.length; i++){
+                    if(elements[i].yh_id == elemID){
                         index = i;
                         break;
                     }
@@ -554,11 +604,22 @@
             getClassname(index){
                 return index == this.currentPage ? '' : ' hide'
             },
-
-
-
+            getParentTop(elem){
+                if(elem.parents('[yh-tab]').length > 0){
+                    let tab = elem.parents('[yh-tab]').eq(0),
+                        tabTitle = tab.children('[yh-tab-title]'),
+                        top = this.getPointHeight(tabTitle) + this.getPointValue(tab,'top')
+                    return top
+                }else{
+                    return 0
+                }
+            },
+            addSettingBox(elem){
+                let top = this.getParentTop(elem)
+                this.settingBox(elem,top);
+            },
             mousedownCallback(parent,elem){
-                this.settingBox(elem);
+                this.addSettingBox(elem)
                 parent.find('.setting').removeClass('setting');
                 elem.addClass('setting');
             },
@@ -566,75 +627,71 @@
                 $('.setting > .yh-edit-layer').hide();
             },
             mouseupCallback(elem,move_box,x,y,distance){
-                var elemID = elem.attr('id'),
-                    index = this.getIndex(elemID,this);
-                
-                var self = this,
+                let elemID = elem.attr('id'),
+                    index = this.getIndex(elemID,this),
+                    elements = this.getElementsData(elemID,this),
+                    self = this,
                     xx = self.toRem(x - distance),
-                    yy = self.toRem(y - distance);
+                    yy = self.toRem(y - distance - self.getParentTop(elem))
                 elem.css({
                     'left':xx,
                     'top':yy
                 });
                 
-                self.pages[self.currentPage].elements[index].props.position.left = xx;
-                self.pages[self.currentPage].elements[index].props.position.top = yy;
+                elements[index].props.position.left = xx;
+                elements[index].props.position.top = yy;
                 
                 move_box.css({
                     'display':'none'
                 });
 
-                self.settingBox(elem);
-                // self.addSetEvent();
+                // self.settingBox(elem)
+                self.addSettingBox(elem)
+                // self.addSetEvent()
             },
-            addText(){
-
-            },
-            addImage(){
+            complexAddElement(elem,name){
+                let complex = elem.closest('[yh-tab]'),   // 第一层
+                    complexID = complex.attr('id'),
+                    complexIndex = this.getIndex(complexID,this),
+                    tabActive = complex.children('[yh-tab-content]').children('.yh-tab-active'),
+                    index = tabActive ? tabActive.index() : 0,
+                    elemID = 'element'+this.count
                 
+                this.count = this.count + 1
+                this.pages[this.currentPage].elements[complexIndex].props.base.tabs[index].elements
+                    .push({
+                        yh_id:elemID,
+                        yh_module:Elements[name],
+                        module:name.split('-')[1],
+                        props:Elements[name].initCtor({id:elemID},this)
+                    })
             },
-            addButton(){
-                
-            },
-            addForm(){
-                
-            },
-            addAudio(){
-                
-            },
-            addVideo(){
-                
-            },
-            addChild(name){
-                switch(name){
-                    case 'components-text':
-                        this.addText();
-                        break;
-                    case 'components-image':
-                        this.addImage();
-                        break;
-                    case 'components-button':
-                        this.addButton();
-                        break;
-                    case 'components-form':
-                        this.addForm();
-                        break;
-                    case 'components-audio':
-                        this.addAudio();
-                        break;
-                    case 'components-video':
-                        this.addVideo();
-                        break;
-                }
-                var elemID = 'element'+this.count;
-                this.count = this.count + 1;
+            addSimpleElement(name){
+                let elemID = 'element'+this.count
+                this.count = this.count + 1
 
                 this.pages[this.currentPage].elements.push({
                     yh_id:elemID,
                     yh_module:Elements[name],
                     module:name.split('-')[1],
                     props:Elements[name].initCtor({id:elemID},this)
-                });
+                })
+            },
+            addChild(name){
+                switch(name){
+                    case 'components-tab':  // 复杂元素（可包含普通元素的元素）
+                        this.addSimpleElement(name)
+                        break
+                    default:
+                        // 如果当前是普通元素
+                        let elem = $('.setting')
+                        if(elem.length > 0 && elem.closest('[yh-tab]').length > 0){
+                            this.complexAddElement(elem,name)
+                        }else{
+                            this.addSimpleElement(name)
+                        }
+                        break
+                }
 
                 // this.drawSmallPage()
             },
@@ -657,42 +714,52 @@
             removePage(index){
                 this.pages.splice(index,1)
             },
+            recoveryPage(self,elements){
+                for(let j = 0; j < elements.length; j++){
+                    switch(elements[j].module){
+                        case 'image':
+                            elements[j].yh_module = YHImage;
+                            break
+                        case 'text':
+                            elements[j].yh_module = YHText;
+                            elements[j].props.content = elements[j].props.content.replace(/(\~\|)/g,'"').replace(/[’‘]/g,'\'')
+                            break
+                        case 'button':
+                            elements[j].yh_module = YHButton;
+                            break
+                        case 'form':
+                            elements[j].yh_module = YHForm;
+                            break
+                        case 'audio':
+                            elements[j].yh_module = YHAudio;
+                            break
+                        case 'video':
+                            elements[j].yh_module = YHVideo;
+                            break
+                        case 'tab':
+                            elements[j].yh_module = YHTab;
+                            for(let p = 0; p < elements[j].props.base.tabs.length; p++){
+                                self.recoveryPage(self,elements[j].props.base.tabs[p].elements)
+                            }
+                            break
+                    }
+                }
+            },
             getPageData(templateID,self){
                 $.ajax({
                     type:'post',
-                    url:'http://localhost:9000/editor/getPageData',
+                    url:MW.host+'editor/getPageData',
                     data:{
                         id:templateID
                     },
                     success:function(result){
+                        result.content.json = result.content.json.replace(/(url\(\")/g,'url\(').replace(/(\"\))/g,')')
                         var data = JSON.parse(result.content.json);
                         self.pages = [];
                         self.count = data.count;
                         for(let i = 0; i < data.pages.length; i++){
                             self.pages.push(JSON.parse(JSON.stringify(data.pages[i])));
-                            for(let j = 0; j < self.pages[i].elements.length; j++){
-                                switch(self.pages[i].elements[j].module){
-                                    case 'image':
-                                        self.pages[i].elements[j].yh_module = YHImage;
-                                        break;
-                                    case 'text':
-                                        self.pages[i].elements[j].yh_module = YHText;
-                                        self.pages[i].elements[j].props.content = self.pages[i].elements[j].props.content.replace(/(\~\|)/g,'"').replace(/[’‘]/g,'\'')
-                                        break;
-                                    case 'button':
-                                        self.pages[i].elements[j].yh_module = YHButton;
-                                        break;
-                                    case 'form':
-                                        self.pages[i].elements[j].yh_module = YHForm;
-                                        break;
-                                    case 'audio':
-                                        self.pages[i].elements[j].yh_module = YHAudio;
-                                        break;
-                                    case 'video':
-                                        self.pages[i].elements[j].yh_module = YHVideo;
-                                        break;
-                                }
-                            }
+                            self.recoveryPage(self,self.pages[i].elements)
                         }
                         MW.bus.$emit('setPages',self.pages)
                     },
@@ -700,6 +767,24 @@
                         console.log(error.message);
                     }
                 })
+            },
+            changePageDataSave(elements){
+                for(let j = 0; j < elements.length; j++){
+                    elements[j].yh_module = null;
+                    if(elements[j].props.classname){
+                        elements[j].props.classname = document.getElementById(elements[j].yh_id).className.replace('setting','');
+                    }
+                    switch(elements[j].module){
+                        case 'text':
+                            elements[j].props.content = elements[j].props.content.replace(/"/g,'~|')
+                            break
+                        case 'tab':
+                            for(let p = 0; p < elements[j].props.base.tabs.length; p++){
+                                this.changePageDataSave(elements[j].props.base.tabs[p].elements)
+                            }
+                            break
+                    }
+                }
             },
             savePage(){
                 var totalElement = $('.yh-content-center').clone()
@@ -724,15 +809,7 @@
                             data.pages = [];
                             for(let i = 0; i < this.$data[attr].length; i++){
                                 data.pages.push(JSON.parse(JSON.stringify(this.$data[attr][i])));
-                                for(let j = 0; j < data.pages[i].elements.length; j++){
-                                    data.pages[i].elements[j].yh_module = null;
-                                    data.pages[i].elements[j].props.classname = document.getElementById(data.pages[i].elements[j].yh_id).className.replace('setting','');
-                                    switch(data.pages[i].elements[j].module){
-                                        case 'text':
-                                            data.pages[i].elements[j].props.content = data.pages[i].elements[j].props.content.replace(/"/g,'~|')
-                                            break
-                                    }
-                                }
+                                this.changePageDataSave(data.pages[i].elements)
                             }
                             break;
                         case 'drag':
@@ -744,13 +821,13 @@
                 }
                 $.ajax({
                     type:'post',
-                    url:'http://localhost:9000/editor/save',
+                    url:MW.host+'editor/save',
                     data:{
                         id:10002,
                         name:'test',
                         style:style,
                         html:totalElement.html().replace(/\'/g,'‘'),
-                        json:JSON.stringify(data).replace(/\'/g,'‘'),
+                        json:JSON.stringify(data).replace(/\'/g,'‘').replace(/(url\(\")/g,'url\(').replace(/(\"\))/g,')'),
                         js:JSON.stringify({
                             pageAnimation:this.pageAnimation
                         }),
@@ -803,46 +880,46 @@
                     value = width + top + bottom;
                 return value;
             },
-            settingBox(element){   // 选中框
-                var checkedboxStyle = {};
-                checkedboxStyle.left = this.getPointValue(element,'left')-2 + this.distance;
-                checkedboxStyle.top = this.getPointValue(element,'top')-2 + this.distance;
+            settingBox(element,parentHeight = 0){   // 选中框
+                let checkedboxStyle = {}
+                checkedboxStyle.left = this.getPointValue(element,'left')-2 + this.distance
+                checkedboxStyle.top = this.getPointValue(element,'top')-2 + this.distance + parentHeight
                 checkedboxStyle.width = this.getPointWidth(element)+4+parseFloat(element.css('border-top-width'))+parseFloat(element.css('border-bottom-width'));
                 checkedboxStyle.height = this.getPointHeight(element)+4+parseFloat(element.css('border-top-width'))+parseFloat(element.css('border-bottom-width'));
-                checkedboxStyle.display = "block";
+                checkedboxStyle.display = "block"
 
-                var scale = 1;
-                checkedboxStyle.left -= 2;
-                checkedboxStyle.top -= 2 * scale;
-                checkedboxStyle.width += 4;
-                checkedboxStyle.height += 4 * scale;
+                let scale = 1
+                checkedboxStyle.left -= 2
+                checkedboxStyle.top -= 2 * scale
+                checkedboxStyle.width += 4
+                checkedboxStyle.height += 4 * scale
 
-                var selectParent = '';
+                let selectParent = ''
                 $(selectParent+' .yh-selectTop').css({
                     'width':checkedboxStyle.width+'px',
                     'left':checkedboxStyle.left+'px',
                     'top':checkedboxStyle.top+'px'
-                });
+                })
                 $(selectParent+' .yh-selectBottom').css({
                     'width':checkedboxStyle.width+'px',
                     'left':checkedboxStyle.left+'px',
                     'top':checkedboxStyle.top+checkedboxStyle.height+'px'
-                });
+                })
                 $(selectParent+' .yh-selectLeft').css({
                     'height':checkedboxStyle.height+'px',
                     'left':checkedboxStyle.left+'px',
                     'top':checkedboxStyle.top+'px'
-                });
+                })
                 $(selectParent+' .yh-selectRight').css({
                     'height':checkedboxStyle.height+'px',
                     'left':checkedboxStyle.left+checkedboxStyle.width+'px',
                     'top':checkedboxStyle.top+'px'
-                });
+                })
                 $(selectParent+' .yh-selectOpera').css({
                     'left':checkedboxStyle.left+5+'px',
                     'top':checkedboxStyle.top+5+'px'
-                });
-                $(selectParent+' .yh-selection').css('display','block');
+                })
+                $(selectParent+' .yh-selection').css('display','block')
             }
         }
     }

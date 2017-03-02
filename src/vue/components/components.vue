@@ -51,14 +51,17 @@
             },
             initUndoEvent(){
                 document.addEventListener('click',function(e){
-                    var setting = document.getElementsByClassName('setting'),
+                    if($(e.target).closest('[id]').length > 0){
+                        return
+                    }
+                    let setting = document.getElementsByClassName('setting'),
                         selection = document.getElementsByClassName('yh-selection'),
                         parents = $(e.target).parents('[id]').not('[id="app"]'),
-                        s = 0;
+                        s = 0
                     
                     if(parents.length == 0 && !MW.isMoving){
                         for(; s < setting.length; s++){
-                            setting[s].className = setting[s].className.replace('setting','');
+                            setting[s].className = setting[s].className.replace('setting','')
                         }
                         for(s = 0; s < selection.length; s++){
                             selection[s].style.display = 'none'

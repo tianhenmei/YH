@@ -45,3 +45,65 @@ html,body,.main {
     left:0;
     top:0;
 }
+/*按钮********************************************/
+[kitty-button]{
+    position:absolute;
+    left:0;
+    top:0;
+}
+.yh-button{
+    width:300px;
+    height:60px;
+    line-height:60px;
+    color:#fff;
+    background:#ff0084;
+    font-size:0.768rem;
+    text-align:center;
+}
+[kitty-button] .kitty-button-content{
+    position:relative;
+}
+[kitty-button] .kitty-button-content a {
+    display:none;
+}
+[kitty-button] .kitty-button-content .yh-button-href{
+    width:100%;
+    height:100%;
+    position:absolute;
+    left:0;
+    top:0;
+    display:block;
+}
+/*tab栏切换********************************************/
+[yh-tab] {
+    width:300px;
+    height:200px;
+    position:absolute;
+    left:0;
+    top:0;
+    background:#fff;
+}
+[yh-tab] [yh-tab-title]{
+    width:100%;
+}
+[yh-tab] [yh-tab-title] > div {
+    float:left;
+    text-align:center;
+    font-size:14px;
+    color:#666;
+    background:#efefef;
+    cursor:pointer;
+}
+[yh-tab] [yh-tab-title] > div:hover,
+[yh-tab] [yh-tab-title] > div.yh-tab-active{
+    background:#ff0084;
+    color:#fff;
+}
+
+[yh-tab] [yh-tab-content] > div{
+    position: relative;
+    display:none;
+}
+[yh-tab] [yh-tab-content] > div.yh-tab-active{
+    display:block;
+}

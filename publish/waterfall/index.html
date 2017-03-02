@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>vue props</title>
+    <link type="text/css" rel="stylesheet" href="css/init.css" />
+    <style>
+        #app {
+            width:1600px;
+        }
+        .parent{
+            float:left;
+        }
+        .people {
+            width:150px;
+            height:150px;
+            margin:0 10px 10px 0;
+            /*border-radius: 400px 400px 150px 150px;*/
+            /*float:left;*/
+        }
+        .row0 {
+            height:180px;
+            /*margin-top:-30px;*/
+        }
+        .row1 {
+            height:250px;
+            /*margin-top:30px;*/
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="clearfix">
+
+    </div>
+    <script>
+        var i = 0,
+            j = 0,
+            src = [
+                'images/Helen.png',
+                'images/Marilyn.png',
+                'images/Jakie.png'
+            ],
+            html = [],
+            img = null,
+            fragment = null;
+        for(i = 0; i < 10; i++){
+            html.push('<div class="parent prow'+(i%2)+'">');
+        }
+        for(i = 0; i < 10; i++){
+            for(j = 0; j < 10; j++){
+                html[j] += '<img class="people row'+Math.floor(Math.random() * 2)+'" src="'+src[(i * 10 + j) % 3]+'" />'
+            }
+        }
+        for(i = 0; i < 10; i++){
+            html[i] += '</div>';
+        }
+        document.getElementById('app').innerHTML = html.join('')
+    </script>
+</body>
+</html>

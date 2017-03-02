@@ -9,6 +9,7 @@ module.exports = {
     isMoving:isMoving,
     moveStatus:false,
     textEditing:false,
+    host:'http://localhost:9000/',
     pageData:{
         elements:[],
         background:{
@@ -20,3 +21,19 @@ module.exports = {
         }
     }
 };
+
+/****MW.bus   自定义事件 */
+// 事件名             触发地方（调用$emit）          监听地方（调用$on）
+// setPages          components-content.vue
+
+
+
+
+
+
+
+
+
+
+
+

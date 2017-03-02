@@ -6,7 +6,7 @@
         </div>
         <div class="yh-edit-layer">
             <div>替换</div>
-            <input type="file" content="src" accept="image/*" name="image" />
+            <input type="file" content="src" accept="image/*" mold="image" />
         </div>
     </div>
 </template>

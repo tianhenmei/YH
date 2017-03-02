@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>vue props</title>
+    <link type="text/css" rel="stylesheet" href="/static/css/init.css" />
+</head>
+<body>
+    <div id="app">
+        <yh-child :list="list" :bstyle="base.style"></yh-child>
+    </div>
+    <script type="text/javascript" src="http://localhost:9000/static/js/lib/vue2.1.10.js"></script>
+    <script>
+        var second = {
+            template:'<div style="width:100px; height:20px;" :style="props">second child</div>',
+            props:['props'],
+        }
+        Vue.component('yh-child',{
+            components:{
+                'second-child':second
+            },
+            template:
+                '<div class="child">'+
+                    '<div>{{title}}</div>'+
+                    '<ul>'+
+                        '<li v-for="one in list">{{one.name}} {{one.city}}'+
+                            '<second-child :props="bstyle"></second-child>'+
+                        '</li>'+
+                    '</ul>'+
+                '</div>',
+            props:['list','bstyle'],
+            data(){
+                return {
+                    title:'stinky husband'
+                }
+            }
+        })
+        var pageVue = new Vue({
+            el:'#app',
+            data:{
+                message:'臭皮蛋臭老公',
+                yh:{
+                    color:'#666'
+                },
+                list:[
+                    {
+                        name:'拉勾',
+                        city:'北京'
+                    },{
+                        name:'新浪微博',
+                        city:'上海'
+                    },{
+                        name:'百度',
+                        city:'成都'
+                    },{
+                        name:'猪八戒网',
+                        city:'重庆'
+                    },{
+                        name:'淘宝网',
+                        city:'杭州'
+                    }
+                ],
+                base:{
+                    style:{
+                        'background-color':'#fff'
+                    }
+                },
+                current:{
+                    name:'拉勾',
+                    city:'北京'
+                },
+                length:0
+            },
+            created(){
+                
+            },
+            mounted(){
+                let self = this
+                setInterval(function(){
+                    self.base.style['background-color'] = 'rgb('+
+                        Math.floor(Math.random() * 256)+','+
+                        Math.floor(Math.random() * 256)+','+
+                        Math.floor(Math.random() * 256)+')'
+                },1000)
+            },
+            methods:{
+                
+            }
+        });
+    </script>
+</body>
+</html>

@@ -296,6 +296,9 @@
             },
             showEditLayer(e){
                 let elem = $(e.target)
+                // if(!elem.hasClass('setting')){
+                //     return
+                // }
                 elem.addClass('white-bg')
                 elem.children('.yh-edit-layer').show();
                 

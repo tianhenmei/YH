@@ -1183,10 +1183,13 @@ var Execute = {
             styleJSON = {}
         for(let s = 0; s < styleArray.length; s++){
             let one = styleArray[s].trim(),
-                arr = []
+                arr = [],
+                name = ''
             if(one){
                 arr = one.split(':')
-                styleJSON[arr[0].trim()] = arr[1].trim()
+                name = arr[0].trim()
+                arr.shift()
+                styleJSON[name] = arr.join(':').trim()
             }
         }
         return styleJSON
