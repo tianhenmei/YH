@@ -108,6 +108,7 @@
                 title:"It's title",
                 count:1,
                 pageAnimation:'move',
+                eventList:[''],
                 moveStatus:false
             }
         },
@@ -301,8 +302,9 @@
                     center.x = data.width / 2 + data.left + contentCenter.offset().left
                     center.y = data.height / 2 + data.top + contentCenter.offset().top
 
-                    transform = elem.find('[rotate]').css('transform')
-                    oangle = transform == 'none' ? 0 : eval('self.get'+transform)
+                    transform = elem.find('[rotate]')[0].style.transform //elem.find('[rotate]').css('transform')
+                    // oangle = transform == 'none' ? 0 : eval('self.get'+transform.replace(/[XYZ]/g,''))
+                    oangle = transform == 'none' ? 0 : parseInt(transform.match(/rotate[XYZ]\(([0-9]*)deg\)/)[1])
 
                     let parent = $(this).parent(),
                         isCenter = $(this).hasClass('center')
@@ -346,8 +348,8 @@
                                 'height':data.height+'px',
                                 'left':data.left + 'px',
                                 'top':data.top +'px',
-                                '-webkit-transform':'rotateZ(0deg)',
-                                'transform':'rotateZ(0deg)',
+                                '-webkit-transform':'rotateZ('+oangle+'deg)',
+                                'transform':'rotateZ('+oangle+'deg)',
                                 'display':'block'
                             });
                         }
@@ -422,7 +424,7 @@
                         last.height = self.getPointOuterHeight(move_box)
                         last.left = self.getPointValue(move_box,'left') - distance
                         last.top = self.getPointValue(move_box,'top') - distance
-                        last.transform = move_box.css('transform')
+                        last.transform = move_box[0].style.transform
 
                         let index = self.getIndex(elemID,self)
 
@@ -681,6 +683,9 @@
                 switch(name){
                     case 'components-tab':  // 复杂元素（可包含普通元素的元素）
                         this.addSimpleElement(name)
+                        if(this.eventList.indexOf('tab') == -1){
+                            this.eventList.push('tab')
+                        }
                         break
                     default:
                         // 如果当前是普通元素
@@ -695,6 +700,20 @@
 
                 // this.drawSmallPage()
             },
+            // setValue(name,value,designValue,elemID){
+            //     let index = this.getIndex(elemID,this),
+            //         elements = this.getElementsData(elemID,this)
+            //     switch(name){
+            //         case 'event-type':
+            //             // this.event.style[entype] = value
+            //             elements[index].props[name] = value
+            //             elements[index].props['entype'] = designValue
+            //             break
+            //         default:
+            //             elements[index].props[name] = value
+            //             break
+            //     }
+            // },
             // drawSmallPage(){
             //     MW.bus.$emit('drawSmallPage')
             // },
@@ -725,7 +744,9 @@
                             elements[j].props.content = elements[j].props.content.replace(/(\~\|)/g,'"').replace(/[’‘]/g,'\'')
                             break
                         case 'button':
-                            elements[j].yh_module = YHButton;
+                            elements[j].yh_module = YHButton
+                            // elements[j].props['event-type'] = elements[j].props['event-type'] ? elements[j].props['event-type'] : '无'
+                            // elements[j].props['entype'] = elements[j].props['entype'] ? elements[j].props['entype'] : 'none'
                             break
                         case 'form':
                             elements[j].yh_module = YHForm;
@@ -757,6 +778,7 @@
                         var data = JSON.parse(result.content.json);
                         self.pages = [];
                         self.count = data.count;
+                        self.eventList = data.eventList
                         for(let i = 0; i < data.pages.length; i++){
                             self.pages.push(JSON.parse(JSON.stringify(data.pages[i])));
                             self.recoveryPage(self,self.pages[i].elements)
@@ -829,7 +851,8 @@
                         html:totalElement.html().replace(/\'/g,'‘'),
                         json:JSON.stringify(data).replace(/\'/g,'‘').replace(/(url\(\")/g,'url\(').replace(/(\"\))/g,')'),
                         js:JSON.stringify({
-                            pageAnimation:this.pageAnimation
+                            pageAnimation:this.pageAnimation,
+                            eventList:this.eventList
                         }),
                         author:'yh'
                     },

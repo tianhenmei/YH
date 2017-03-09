@@ -24,7 +24,9 @@ module.exports = {
 
 /****MW.bus   自定义事件 */
 // 事件名             触发地方（调用$emit）          监听地方（调用$on）
-// setPages          components-content.vue
+// setPages          components-content.vue      components-pages.vue
+// updateContent     button.vue                  components-content.vue
+
 
 
 

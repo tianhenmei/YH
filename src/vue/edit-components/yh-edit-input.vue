@@ -134,4 +134,20 @@
     .yh-edit-box-shadow-x .yh-edit-value span{
         width:15px;
     }
+
+    .yh-edit-href {
+        width: 100%;
+        height: 30px;
+        line-height: 30px;
+    }
+    .yh-edit-href .yh-edit-text {
+        height: 28px;
+        line-height: 28px;
+    }
+    .yh-edit-href .yh-edit-value input {
+        width: 330px;
+        height: 30px;
+        line-height: 30px;
+        border: 1px solid #ccc;
+    }
 </style>

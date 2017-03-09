@@ -7,7 +7,7 @@
             <div class="yh-button" 
                 :src="props.src" 
                 :style="props.style" v-html="props.content"></div>
-            <a :class="{'yh-button-href':props.href}" :href="props.href"></a>
+            <a :class="{'yh-button-href':props.href}" :href="props.href" target="_blank"></a>
         </div>
         <div class="yh-edit-layer clearfix">
             <yh-tab :props="editOptions">
@@ -33,30 +33,11 @@
                     <box-shadow :options="style" @setValue="setValue" @setChangeStatus="setChangeStatus"></box-shadow>
                 </div>
                 <div class="yh-edit-tab-content yh-edit-event clearfix" slot="content1">
+                    <yh-edit-event :event="event" @setEventValue="setEventValue"></yh-edit-event>
                 </div>
                 <div class="yh-edit-tab-content yh-edit-animation clearfix" slot="content2">
                 </div>
             </yh-tab>
-
-
-            <!--<div class="yh-edit-tab yh-edit-basic yh-edit-active">
-                <div class="yh-edit-tab-title">基础设置</div>
-                <div class="yh-edit-tab-content clearfix">
-                    
-                </div>
-            </div>
-            <div class="yh-edit-tab yh-edit-event">
-                <div class="yh-edit-tab-title">事件设置</div>
-                <div class="yh-edit-tab-content clearfix">
-
-                </div>
-            </div>
-            <div class="yh-edit-tab yh-edit-animation">
-                <div class="yh-edit-tab-title">动画设置</div>
-                <div class="yh-edit-tab-content clearfix">
-
-                </div>
-            </div>-->
         </div>
     </div>
 </template>
@@ -66,6 +47,9 @@
     import Editor from './editor.js'
 
     // ededit-components
+    import YHEditInput from '../edit-components/yh-edit-input.vue'
+    import YHEditOptions from '../edit-components/yh-edit-options.vue'
+    import YHEditEvent from '../edit-components/yh-edit-event.vue'
     import fontSize from '../edit-components/font-size.vue'
     import width from '../edit-components/width.vue'
     import height from '../edit-components/height.vue'
@@ -88,6 +72,9 @@
     }
     export default {
         components:{
+            'yh-edit-input':YHEditInput,
+            'yh-edit-options':YHEditOptions,
+            'yh-edit-event':YHEditEvent,
             'font-size':fontSize,
             'width':width,
             'height':height,
@@ -102,7 +89,6 @@
         },
         data(){
             let self = this
-
             return Object.assign({
                 self:self,
                 href:'',
@@ -122,7 +108,14 @@
                             title:'动画设置'
                         }]
                     }
-                }
+                },
+                event:{
+                    style:{
+                        'event-type':'无',
+                        'entype':'none'
+                    },
+                    real:this.props
+                },
             })
         },
         props:['props'],
@@ -171,6 +164,13 @@
                     }
                 }
             },
+            setEvent(name,value,designValue){
+                let elem = $('.setting'),
+                    content = elem.find('.kitty-button-content'),
+                    button = elem.find('.yh-button')
+                
+                this.props.href = designValue
+            },
             setValue(name,value,designValue,status = true){
                 if(status){
                     let elem = $('.setting'),
@@ -190,6 +190,21 @@
                     this.style[name] = designValue
                 }
             },
+            setEventValue(name,value,designValue){
+                // let elemID = this.props.id
+                switch(name){
+                    case 'event-type':
+                        // this.event.style[entype] = value
+                        this.props[name] = value
+                        this.props['entype'] = designValue
+                        break
+                    default:
+                        this.props[name] = value
+                        break
+                }
+                // this.$emit('setValue',name,value,designValue,elemID);
+                // console.log('button: '+this.props['event-type'])
+            },
             setChangeStatus(status){
                 this.changeStatus = true
             }
@@ -202,6 +217,7 @@
                 position:Object.assign({},JSON.parse(JSON.stringify(baseData.position)),options.position ? options.position : {}),
                 content:'我是按钮',
                 href:options.href ? options.href : '',
+                'event-type':options['event-type'] ? options['event-type'] : '无',
                 classname:options.classname ? options.classname : ''
             }
         }

@@ -10,6 +10,8 @@ var source = require('vinyl-source-stream');
 var through2 = require('through2');
 var vueify = require('vueify');
 var rename = require('gulp-rename');
+// 合并文件
+var concat = require('gulp-concat');
 // 暂未找到browserify编译打包.vue 文件，修改使用webpack方式
 var webpack = require('webpack');
 var getConfig = require('./build/config.js').getConfig;
@@ -29,28 +31,43 @@ var chalk = require('chalk');
 var app = express();
 
 var src = './src',
-    dist = './dist';
+    dist = './dist',
+    js_src = './publish',
+    js_dist = './publish';
+
+//获取任务参数 
+var params = {}, argv = process.argv
+params[argv[2]] = (argv.length > 2) && argv.slice(3).reduce(function(res, p) {
+    var segs = p.slice(2).split(/[:]/g);
+    if(segs.length < 2 && argv[1] == 'dev') {
+        return console.log(chalk.red('[用法错误]') + ` 参数${p}必须用:分隔`)
+    }
+    res[segs[0]] = segs[1]
+    return res
+}, {}) || {}
 
 /********************************************************************
  * compile: 将es6 打包成 es5
  * ****************************************************/
 gulp.task('compile:es6',function(){
-    return gulp.src(src+'/**/*.js')
+    var file = js_src+'/'+argv[4]
+    return gulp.src(file+'/**/*.js')
         .pipe(babel())
-        .pipe(gulp.dest(dist));
+        .pipe(gulp.dest(js_dist+'/'+argv[4]));
 });
 /********************************************************************
  * compile: 将es6 打包成 es5 后能在浏览器上直接调用
  * ****************************************************/
 gulp.task('compile:browser',['compile:es6'],function(){
-    return gulp.src(dist+'/**/*.js')
+    var initJSPath = js_dist+'/'+argv[4]
+    return gulp.src(initJSPath+'/**/*.js')
         .pipe(through2.obj(function(file, enc, next) {
             var folder = file.path.split(/\//g),
                 filename = folder[folder.length - 1],
                 filePath = folder.slice(0,folder.length-1).join('/'),
-                bundlePath = file.path.replace(/(\.js)?$/, '.bundle.js');
+                bundlePath = file.path.replace(/(\.js)?$/, '.bundle.js'),
+                extname = /(.bundle)/g.test(filename) ? '.js' : '.bundle.js';
 
-            console.log('bundle: '+bundlePath);
             browserify(file.path)
                 // .transform(reactify)
                 .bundle(function(err, res) {
@@ -60,26 +77,17 @@ gulp.task('compile:browser',['compile:es6'],function(){
                 })
                 .pipe(source(filename))
                 .pipe(rename({
-                    extname:'.js',//'.bundle.js'
+                    extname:extname,//'.bundle.js'
                 }))
                 .pipe(gulp.dest(filePath));
     }));
 });
 
+
 gulp.task('compile',['compile:es6','compile:browser']);
 
 
 
-//获取任务参数 
-var params = {}, argv = process.argv
-params[argv[2]] = (argv.length > 2) && argv.slice(3).reduce(function(res, p) {
-    var segs = p.slice(2).split(':')
-    if(segs.length < 2) {
-        return console.log(chalk.red('[用法错误]') + ` 参数${p}必须用:分隔`)
-    }
-    res[segs[0]] = segs[1]
-    return res
-}, {}) || {}
 /********************************************************************
  * dev: 将es6 打包成 es5，同时将vue文件打包成js使用浏览器访问
  * ****************************************************/

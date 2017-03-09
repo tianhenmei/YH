@@ -25,7 +25,7 @@
                     :class="options.style[options.stylename] == one? 'active' : ''"
                     :value="options.realList[index]" 
                     :index="index"
-                    :style="'font-size:'+options.realList[index]+options.realunit"
+                    :style="(options.stylename == 'font-size' ? ('font-size:'+options.realList[index]+options.realunit) : '')"
                     @click.stop="setValue">
                         {{one}}{{options.unit}}
                 </li>
@@ -48,6 +48,7 @@
             hideEditList(e){
                 $(e.target).closest('.yh-edit-choose').children('.yh-edit-list').hide()
             },
+            // yh-edit-options
             setValue(e){
                 let target = e.target,
                     value = target.attributes['value'].value,   // 最终设置的值
@@ -56,7 +57,7 @@
                     list = $(e.target).closest('.yh-edit-list')
                 this.value = svalue
                 list.hide()
-                this.$emit('setValue',this.options.stylename,value+this.options.realunit)
+                this.$emit('setValue',this.options.stylename,value+this.options.realunit,svalue+this.options.unit)
             }
         }
     }

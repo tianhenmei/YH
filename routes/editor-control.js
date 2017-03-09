@@ -7,6 +7,8 @@ var bodyParser = require('body-parser');
 var express = require('express');
 var multiparty = require('multiparty');
 var sizeOf = require('image-size');
+var child_process = require('child_process');
+var uglify = require('uglify-js');
 
 var mysql = require("./mysql.js");
 // var test = require("../public/dist/demo/js/test-main.js");
@@ -143,93 +145,42 @@ router.post('/upload',function(req,res){
 function setFile(page){
     mkdirsSync('publish/'+page.name+'/js','0777');
     mkdirsSync('publish/'+page.name+'/css','0777');
-    writeFile('publish/'+page.name+'/js/index.js',page.js ? writeJS(JSON.parse(page.js)) : '')
-    writeFile('publish/'+page.name+'/css/index.css',page.style ? page.style : '')
+    if(page.js){
+        writeJS(JSON.parse(page.js),'publish/'+page.name+'/js/index.js');
+    }
+    // writeFile('publish/'+page.name+'/js/index.js',page.js ? writeJS(JSON.parse(page.js)) : '')
+    writeFile('publish/'+page.name+'/css/index.css',page.style ? page.style.replace(/(http:\/\/localhost:9000\/)/g,'/') : '')
     writeFile('publish/'+page.name+'/index.json',page.json ? page.json : '')
-    writeFile('publish/'+page.name+'/index.html',writeHTML(page.html))
+    writeFile('publish/'+page.name+'/index.html',writeHTML(page.html.replace(/(http:\/\/localhost:9000\/)/g,'/')))
 }
 
-function writeJS(data){
-    let js = ''+
-            'var data={\n'+
-                'direction:{\n'+
-                    'x:"down",\n'+
-                    'y:"down"\n'+
-                '},\n'+
-                'start:{\n'+
-                    'x:0,\n'+
-                    'y:0\n'+
-                '},\n'+
-                'end:{\n'+
-                    'x:0,\n'+
-                    'y:0\n'+
-                '},\n'+
-                'now:0,\n'+
-                'last:0, \n'+
-                'page:{\n'+
-                    'up:{\n'+
-                        'last:"'+data.pageAnimation+'ULast",\n'+
-                        'now:"'+data.pageAnimation+'UNow",\n'+
-                    '},\n'+
-                    'down:{\n'+
-                        'last:"'+data.pageAnimation+'DLast",\n'+
-                        'now:"'+data.pageAnimation+'DNow",\n'+
-                    '},\n'+
-                '},\n'+
-                'pageLength:$(".page").length,\n'+
-                'isMoving:false\n'+
-            '};\n'+
-            '//$(".page").css({"width":document.documentElement.clientWidth+"px","height":document.documentElement.clientHeight+"px"})\n'+
-            'document.addEventListener("touchstart",function(ev){\n'+
-                'var touch = ev.targetTouches[0];\n'+
-                'data.start.x = touch.clientX;\n'+
-                'data.start.y = touch.clientY;\n'+
-            '},false);\n'+
-            'document.addEventListener("touchmove",function(ev){\n'+
-                'ev.preventDefault();\n'+
-                'var touch = ev.targetTouches[0];\n'+
-                'data.end.x = touch.clientX;\n'+
-                'data.end.y = touch.clientY;\n'+
-            '},false);\n'+
-            'document.addEventListener("touchend",function(ev){\n'+
-                'data.direction.x = (data.end.x - data.start.x) > 0 ? "down" : (data.end.x - data.start.x) < 0 ? "up" : "down";\n'+
-                'data.direction.y = (data.end.y - data.start.y) > 0 ? "down" : (data.end.y - data.start.y) < 0 ? "up" : "down";\n'+
-                'if(!data.isMoving){\n'+
-                    'data.isMoving = true;\n'+
-                    'pageMove();\n'+
-                '}\n'+
-            '},false);\n'+
-            'function pageMove(){;\n'+
-                'data.last = data.now;\n'+
-                'var od = "down";\n'+
-                'if(data.direction.y == "up"){\n'+
-                    'data.now++;\n'+
-                '}else{\n'+
-                    'data.now--;\n'+
-                    'od = "up";\n'+
-                '}\n'+
-                
-                'if(data.now >= data.pageLength){\n'+
-                    'data.now = 0;\n'+
-                '}\n'+
-                'if(data.now <= -1){\n'+
-                    'data.now = data.pageLength - 1;\n'+
-                '}\n'+
-                '$(".page").removeClass('+
-                    'data.page[data.direction.y].now+" "+data.page[data.direction.y].last +'+
-                    '" "+data.page[od].now+" "+data.page[od].last + '+
-                    '" pageCurrent").addClass("hide");\n'+
-                '$(".page"+data.now).removeClass("hide").addClass(data.page[data.direction.y].now+" pageCurrent");\n'+
-                '$(".page"+data.last).removeClass("hide").addClass(data.page[data.direction.y].last);\n'+
-                'setTimeout(function(){\n'+
-                    '$(".page").removeClass('+
-                        'data.page[data.direction.y].now+" "+data.page[data.direction.y].last +'+
-                        '" "+data.page[od].now+" "+data.page[od].last);\n'+
-                    '$(".page"+data.last).addClass("hide")\n'+
-                    'data.isMoving = false;\n'+
-                '},500);\n'+
-            '};\n';
-    return js
+function concat(fileIn,fileOut,animation){
+    var fileArray = Array.isArray(fileIn)? fileIn : [fileIn],
+        origCode,
+        ast,
+        finalCode='';
+    for(var i = 0; i < fileArray.length; i++) {
+        origCode = fs.readFileSync('./publish/base/js/'+fileArray[i]+'.js', 'utf8');
+        // ast = uglify.parser.parse(origCode);
+        // ast = uglify.uglify.ast_mangle(ast);
+        // ast = uglify.uglify.ast_squeeze(ast); 
+        finalCode += origCode + '\n\n\n\n\n\n\n\n';//';' + uglify.uglify.gen_code(ast);
+    }
+    finalCode += 'var PM = new PageMove({animation:"'+animation+'"});'
+    fs.writeFileSync(fileOut, finalCode, 'utf8');
+}
+
+function writeJS(data,path){
+    // uglify
+    // child_process.exec(cmd, [options], callback)
+    let jsList = ['page','event']
+    jsList = jsList.concat(data.eventList)
+    console.log(jsList)
+    concat(jsList,path,data.pageAnimation);  // ,'./publish/base/js/bgmusic.js'
+    
+    child_process.exec('npm run compile -- --dir test',function(){
+        console.log('node编译完成')
+    })
 }
 
 function writeHTML(pageHTML){
@@ -274,7 +225,7 @@ function writeHTML(pageHTML){
                     pageHTML.replace(/[’‘]/g,'\'') + '\n'+
                 '</div>'+ '\n'+
                 '<script type="text/javascript" src="/static/js/lib/jquery.1.10.1.min.js"></script>'+'\n'+
-                '<script type="text/javascript" src="./js/index.js"></script>'+'\n'+
+                '<script type="text/javascript" src="./js/index.bundle.js"></script>'+'\n'+
             '</body>'+'\n'+
         '</html>'+
     ''
