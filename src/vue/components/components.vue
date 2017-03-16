@@ -15,7 +15,7 @@
 </template>
 <script>
     // import $ from '../../common/js/lib/jquery.1.10.1.min.js'
-
+    import store from './store/index.js'
     import MW from './bus.js'
     import Pages from './components-pages'
     import Content from './components-content'
@@ -26,6 +26,7 @@
                 title:'KITTY EDITOR COMPONENTS'
             }
         },
+        store,
         mounted(){
             this.init();
             this.initEvent();

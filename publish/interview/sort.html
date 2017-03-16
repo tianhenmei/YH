@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>vue props</title>
+    <link type="text/css" rel="stylesheet" href="/static/css/init.css" />
+</head>
+<body>
+    <div id="app">
+        <p>{{arr3}}</p>
+        <p>{{arr4}}</p>
+        <p>{{arr5}}</p>
+        <p>{{arr6}}</p>
+    </div>
+    <script type="text/javascript" src="http://localhost:9000/static/js/lib/vue2.1.10.js"></script>
+
+
+
+<script type="text/javascript" charset="utf-8">
+    function isString(value){
+        return typeof value === 'string' && /[a-zA-z\-_]/g.test(value) && value.constructor === String
+    }
+
+    function arraySort(a,b,status){
+        var na = a,
+            nb = b,
+            al = a.length,
+            bl = b.length,
+            i = 0,
+            str = '',
+            type = false;
+        if(isString(a) && isString(b) && /[0-9]/g.test(al-1) && /[0-9]/g.test(bl-1)){  // 只有字符串最后一个是数字
+            for( i = 0; i < a.length; i++){
+                if(a[i] != b[i]){
+                    break;
+                }
+            }
+            str = a.slice(0,i);
+            if(/[0-9]/g.test(a[i]) && /[0-9]/g.test(a[i])){  // 除开前面相等的字符串以外，第一个字符串必须是数字
+                if(!/[a-zA-z\-_]/g.test(a.slice(i)) && !/[a-zA-z\-_]/g.test(b.slice(i))){ // 判断除开相等的字符串以外，剩下的字符串都应该是数字
+                    na = parseFloat(a.slice(i));
+                    nb = parseFloat(b.slice(i));
+                    type = true;
+                }
+            }
+        }else{
+            type = true;
+        }
+        if(type){
+            if(status){
+                return nb - na
+            }else{
+                return na - nb
+            }
+        }else{
+            return na > nb ? (status ? -1 : 1) : (status ? 1 : -1);
+        }
+    }
+    var arr = [1,2,4,4,3,3,1,5,3],
+        arr2 = [1,2,10,7,8,5],
+        arr3 = ['element1','element2','element10','element7','element8','element5'],
+        arr4 = ['George','John','Thomas','James','Adrew','Martin'],
+        arr5 = ['10','5','40','25','1000','1'],
+        arr6 = [10,5,40,25,1000,1],
+        arr7 = [1,9,5,6,3,4,23,456,32,2,41,23,34],
+        arr1 = [];
+
+    var vm = new Vue({
+        el:'#app',
+        data:{
+            arr3:arr3,
+            arr4:arr4,
+            arr5:arr5,
+            arr6:arr6
+        }
+    });
+    arr3.sort(function(a,b){
+        // true  倒序（从大到小）   默认：顺序（从小到大）
+        return arraySort(a,b,true);
+    });
+    arr4.sort(function(a,b){
+        return arraySort(a,b);
+    });
+    arr5.sort(function(a,b){
+        return arraySort(a,b);
+    });
+    arr6.sort(function(a,b){
+        return arraySort(a,b);
+    });
+</script>
+</body>
+</html>

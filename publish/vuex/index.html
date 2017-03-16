@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>首页</title>
+<link type="text/css" rel="stylesheet" href="/static/css/init.css" />
+<style>
+    ul {
+
+    }
+    li {
+        width:100px;
+        height:100px;
+        line-height:100px;
+        float:left;
+        border:1px solid red;
+        color:#333;
+        text-align:center;
+    }
+</style>
+</head>
+<body>
+    <div id="main">
+        <!--<p :count="countPlusLocalState">{{count}}</p>-->
+        <div v-for="(page,index) in pages" :class="'page page'+index" :style="'background-color:'+page.background.color">
+            <div v-for="(element,i) in page.elements" :id="element.id">{{element.id}}</div>
+        </div>
+    </div>
+<script type="text/javascript" src="http://localhost:9000/static/js/lib/vue2.1.10.js"></script>
+<script src="https://unpkg.com/vuex@2.2.1"></script>
+
+
+<script type="text/javascript">
+    const store = new Vuex.Store({
+        state:{
+            count:0,
+            todos:[{
+                id:1,test:'todos 1',done:true
+            },{
+                id:2,test:'todos 2',done:false
+            }],
+            pages:[]
+        },
+        mutations:{
+            // increment:(state , payload) => state.count += payload.localCount,
+            increment(state , payload){
+                // console.log(payload)
+                state.count += payload.localCount
+            },
+            initPages(state,pages){
+                state.pages = pages
+            },
+            setBackgroundColor(state,payload){
+                // console.log(payload.color)
+                state.pages[payload.index].background.color = payload.color
+            }
+        },
+        getters:{
+            doneTodos:state => {
+                return state.todos.filter(todo => todo.done)
+            }
+        },
+        actions:{  // Action 函数接受一个与 store 实例具有相同方法和属性的 context 对象
+            // Action 通过 store.dispatch 方法触发：store.dispatch('increment')
+            // increment({commit}){
+            //     commit('increment')
+            // },
+            increment(context){
+                context.commit('increment')
+            }
+        }
+    })
+    const mapState = Vuex.mapState
+    const mapGetters = Vuex.mapGetters
+    var wm = new Vue({
+        el:'#main',
+        store,
+        data(){
+            return {
+                localCount:10
+            }
+        },
+        // computed://{
+        //     mapState({
+        //         // count:state => state.count,
+        //         // 传字符串参数 'count' 等同于 `state => state.count`
+        //         count: 'count',
+        //         // 为了能够使用 `this` 获取局部状态，必须使用常规函数
+        //         countPlusLocalState (state) {
+        //             return state.count + this.localCount
+        //         }
+        //     }),
+        //     // ...mapGetters([
+        //     //     'doneTodos'
+        //     // ])
+        // //},
+        // 当映射的计算属性的名称与 state 的子节点名称相同时，我们也可以给 mapState 传一个字符串数组。
+        computed:mapState([
+            // 'count'
+            'pages'
+        ]),
+        mounted(){
+            let self = this
+            var pages = [{
+                background:{
+                    color:'#0ff',
+                    repeat:'no-repeat'
+                },
+                elements:[{
+                    id:'element0'
+                },{
+                    id:'element1'
+                },{
+                    id:'element2'
+                }]
+            },{
+                background:{
+                    color:'#ff0',
+                    repeat:'no-repeat'
+                },
+                elements:[{
+                    id:'element4'
+                },{
+                    id:'element5'
+                },{
+                    id:'element6'
+                }]
+            },{
+                background:{
+                    color:'#f0f',
+                    repeat:'no-repeat'
+                },
+                elements:[{
+                    id:'element7'
+                },{
+                    id:'element8'
+                },{
+                    id:'element9'
+                }]
+            }]
+            store.commit('initPages',pages)
+            setInterval(function(){
+                let a = Math.floor(Math.random() * 255),
+                    b = Math.floor(Math.random() * 255),
+                    c = Math.floor(Math.random() * 255),
+                    arr = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
+                store.commit('setBackgroundColor',{
+                    index:Math.floor(Math.random() * 3),
+                    color:'#'+ arr[Math.floor(a / 16)] + arr[a % 16]
+                        + arr[Math.floor(b / 16)] + arr[b % 16]
+                        + arr[Math.floor(c / 16)] + arr[c % 16]
+                })
+            },1000)  
+            // setInterval(function(){
+            //     // store.commit('increment',self)
+            //     store.commit({
+            //         type:'increment',
+            //         localCount:self.localCount
+            //     })
+            //     // console.log(store.getters.doneTodos)
+            // },1000)  
+        },
+        methods:{
+            // ...mapActions([  // // 映射 this.increment() 为 this.$store.dispatch('increment')
+                // 'increment'
+            // ])
+            // ...mapActions({  // // 映射 this.add() 为 this.$store.dispatch('increment')
+                // add:'increment'
+            // })
+            // ...mapMutations([
+            //     'increment'   // 映射 this.increment() 为 this.$store.commit('increment')
+            // ]),
+            // ...mapMutations({  // // 映射 this.add() 为 this.$store.commit('increment')
+            //     add:'increment'
+            // })
+        }
+    })
+</script>
+</body>
+</html>

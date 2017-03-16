@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>首页</title>
+<link type="text/css" rel="stylesheet" href="/static/css/init.css" />
+<style>
+    ul {
+
+    }
+    li {
+        width:100px;
+        height:100px;
+        line-height:100px;
+        float:left;
+        border:1px solid red;
+        color:#333;
+        text-align:center;
+    }
+</style>
+</head>
+<body>
+    <div id="main">
+        <h1>Hello App!</h1>
+        <p>
+            <!-- 使用 router-link 组件来导航. -->
+            <!-- 通过传入 `to` 属性指定链接. -->
+            <!-- <router-link> 默认会被渲染成一个 `<a>` 标签 -->
+            <router-link to="/user/foo" replace>首页 /user/foo</router-link>
+            <router-link to="/user/bar?user=2">Kitty's List /user/bar?user=2</router-link>
+            <router-link to="/user/other/foo">Kitty's Garden /user/other/foo</router-link>
+            <router-link :to="{name:'user',params:{id:'other'}}">Kitty's Others</router-link>
+        </p>
+        <!-- 路由出口 -->
+        <!-- 路由匹配到的组件将渲染在这里 -->
+        <router-view></router-view>
+        <router-view name="a"></router-view>
+        <router-view name="b"></router-view>
+    </div>
+<script type="text/javascript" src="http://localhost:9000/static/js/lib/vue2.1.10.js"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+
+<script type="text/javascript">
+    // 0. 如果使用模块化机制编程，導入Vue和VueRouter，要调用 Vue.use(VueRouter)
+
+    // 1. 定义（路由）组件。
+    // 可以从其他文件 import 进来
+    const foo = {template:'<h3>children foo</h3>'}
+    const bar = {template:'<div>children bar</div>'}
+    const user = {
+        template:'<div class="user">'+
+            '<h2>user {{$route.params.id}}</h2>'+
+            '<router-view></router-view>'+
+        '</div>',
+        watch:{
+            '$route'(to,from){
+                console.log(to)
+            }
+        }
+    }
+    // 2. 定义路由
+    // 每个路由应该映射一个组件。 其中"component" 可以是
+    // 通过 Vue.extend() 创建的组件构造器，
+    // 或者，只是一个组件配置对象。
+    // 我们晚点再讨论嵌套路由。
+    const routes = [
+        {
+            path:'/foo',component:foo
+        },{
+            path:'/bar',component:bar
+        },
+        {  // 动态路径参数 以冒号开头
+            name:'user',
+            path:'/user/:id',
+            components:{
+                default:user,
+                a:foo,
+                b:bar
+            },
+            children:[{
+                // 当 /user/:id/foo 匹配成功，
+                // UserProfile 会被渲染在 User 的 <router-view> 中
+                path:'foo',
+                redirect:'mrz',
+                alias:'bar',
+                component:foo
+            },{
+                path:'',
+                component:bar
+            }]
+        }
+    ]
+    
+    // 3. 创建 router 实例，然后传 `routes` 配置
+    // 你还可以传别的配置参数, 不过先这么简单着吧。
+    const router = new VueRouter({    // （缩写）相当于 routes: routes
+        mode: 'history',
+        routes         
+    })
+    // router.push({ name: 'user', params: { id: '123' }})
+    // 4. 创建和挂载根实例。
+    // 记得要通过 router 配置参数注入路由，
+    // 从而让整个应用都有路由功能
+    const app = new Vue({
+        router
+    }).$mount('#main')
+</script>
+</body>
+</html>

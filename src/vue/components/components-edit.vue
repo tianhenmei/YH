@@ -61,6 +61,8 @@
                     <ul class="yh-acontent" @click.stop.prevent="addAnimation">
                         <li animation="yh-opacity">淡入</li>
                         <li animation="yh-rotate">旋转</li>
+                        <li animation="yh-width">宽度变化</li>
+                        <li animation="yh-height">高度变化</li>
                         <li animation="yh-left">从左进入</li>
                         <li animation="yh-right">从右进入</li>
                         <li animation="yh-top">从上进入</li>
@@ -245,7 +247,8 @@
             },
             addClass(e,attr,name,check){
                 let value = e.target.attributes[attr].value
-                let elem = document.getElementsByClassName('setting')[0]
+                let elem = document.getElementsByClassName('setting')[0],
+                    elemID = elem.id
                 let classArray = elem.className.split(' ')
                 let classname = ''
                 for(let c = 0; c < classArray.length; c++){
@@ -259,6 +262,7 @@
                 }
                 classname += (value + name)
                 elem.className = classname
+                MW.bus.$emit('setClassname',elemID,classname);
             }
         }
     }

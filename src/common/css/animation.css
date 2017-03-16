@@ -503,6 +503,60 @@
 }
 
 
+.yh-width-animation {
+    -webkit-animation:yhWidth 0.5s 0.5s linear both;
+    animation:yhWidth 0.5s 0.5s linear both;
+    -webkit-transform-origin:0 50%;
+    transform-origin:0 50%;
+    overflow: hidden;
+}
+@-webkit-keyframes yhWidth {
+    0% {
+        width:0;
+    }
+    100% {
+        width:100%;
+    }
+}
+@keyframes yhWidth {
+    0% {
+        width:0;
+    }
+    100% {
+        width:100%;
+    }
+}
+.yh-height-animation {
+    -webkit-animation:yhHeight 0.5s 0.5s linear both;
+    animation:yhHeight 0.5s 0.5s linear both;
+    -webkit-transform-origin:50% 0;
+    transform-origin:50% 0;
+    overflow: hidden;
+}
+@-webkit-keyframes yhHeight {
+    0% {
+        height:0;
+    }
+    100% {
+        height:100%;
+    }
+}
+@keyframes yhHeight {
+    0% {
+        height:0;
+    }
+    100% {
+        height:100%;
+    }
+}
+.yh-heightbottom-animation {
+    -webkit-animation:yhHeight 0.5s 0.5s linear both;
+    animation:yhHeight 0.5s 0.5s linear both;
+    -webkit-transform-origin:50% 100%;
+    transform-origin:50% 100%;
+    overflow: hidden;
+}
+
 
 
 

@@ -50,6 +50,7 @@
 </template>
 <script>
     import $ from '../../common/js/lib/jquery.1.10.1.min.js'
+    import {mapState} from 'Vuex'
     import MW from './bus.js'
     import Drag from './drag.js'
     import YHImage from './image.vue'
@@ -112,10 +113,17 @@
                 moveStatus:false
             }
         },
+        // computed:mapState([
+        //     'currentPage',
+        //     'pages'
+        // ]),
         created(){
             var that = this
             MW.bus.$on('addChild',name => {
                 that.addChild(name)
+            })
+            MW.bus.$on('setClassname',(elemID,classname) => {
+                that.setClassname(elemID,classname)
             })
             MW.bus.$on('savePage',() => {
                 that.savePage()
@@ -154,6 +162,7 @@
                     }
                 }
             })
+            MW.bus.$on('addEventList',this.addEventList)
         },
         mounted(){
             this.getPageData('10002',this);
@@ -304,7 +313,7 @@
 
                     transform = elem.find('[rotate]')[0].style.transform //elem.find('[rotate]').css('transform')
                     // oangle = transform == 'none' ? 0 : eval('self.get'+transform.replace(/[XYZ]/g,''))
-                    oangle = transform == 'none' ? 0 : parseInt(transform.match(/rotate[XYZ]\(([0-9]*)deg\)/)[1])
+                    oangle = transform == 'none' ? 0 : parseInt(transform.match(/rotate[XYZ]{0,1}\(([0-9]*)deg\)/)[1])
 
                     let parent = $(this).parent(),
                         isCenter = $(this).hasClass('center')
@@ -679,13 +688,16 @@
                     props:Elements[name].initCtor({id:elemID},this)
                 })
             },
+            addEventList(name){
+                if(this.eventList.indexOf(name) == -1){
+                    this.eventList.push(name)
+                }
+            },
             addChild(name){
                 switch(name){
                     case 'components-tab':  // 复杂元素（可包含普通元素的元素）
                         this.addSimpleElement(name)
-                        if(this.eventList.indexOf('tab') == -1){
-                            this.eventList.push('tab')
-                        }
+                        this.addEventList('tab')
                         break
                     default:
                         // 如果当前是普通元素
@@ -699,6 +711,11 @@
                 }
 
                 // this.drawSmallPage()
+            },
+            setClassname(elemID,classname){
+                let elements = this.getElementsData(elemID,this),
+                    index = this.getIndex(elemID,this)
+                elements[index].props.classname = classname
             },
             // setValue(name,value,designValue,elemID){
             //     let index = this.getIndex(elemID,this),
@@ -783,6 +800,7 @@
                             self.pages.push(JSON.parse(JSON.stringify(data.pages[i])));
                             self.recoveryPage(self,self.pages[i].elements)
                         }
+                        // self.$store.commit('init',self.pages)
                         MW.bus.$emit('setPages',self.pages)
                     },
                     error:function(error){

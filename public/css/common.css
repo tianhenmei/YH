@@ -47,6 +47,7 @@ html,body,.main {
 }
 /*按钮********************************************/
 [kitty-button]{
+    width: auto;
     position:absolute;
     left:0;
     top:0;

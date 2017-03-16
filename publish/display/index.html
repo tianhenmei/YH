@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>vue props</title>
+    <link type="text/css" rel="stylesheet" href="/static/css/init.css" />
+    <style>
+        .list .one {
+            width:100px;
+            height:100px;
+            line-height:100px;
+            margin:0 10px 0 0;
+            background:red;
+            display:list-item;
+            text-align:center;
+            list-style:square;
+            list-style-position:inside;
+            float:left;
+        }
+        .table{
+            display:table;
+        }
+        .table .one {
+            width:100px;
+            height:100px;
+            line-height:100px;
+            margin:0 10px 0 0;
+            background:blue;
+            text-align:center;
+        }
+        .table .table-row-group{
+            display:table-row-group;
+        }
+        .table .table-column-group{
+            display:table-column-group;
+        }
+        .table {
+            width:80%;
+            height:220px;
+            margin:20px auto;
+            border-collapse: collapse;
+        }
+        .table .table-column {
+            display:table-cell;
+        }
+        .table .table-row {
+            display:table-row;
+        }
+    </style>
+</head>
+<body>
+    <div class="list clearfix">
+        <div class="one"></div>
+        <div class="one">2</div>
+        <div class="one">3</div>
+        <div class="one">4</div>
+        <div class="one">5</div>
+        <div class="one">6</div>
+        <div class="one">7</div>
+        <div class="one">8</div>
+    </div>
+    <div class="table">
+        <div class="table-row">
+            <div class="one table-column">2</div>
+            <div class="one table-column">3</div>
+            <div class="one table-column">4</div>
+            <div class="one table-column">5</div>
+        </div>
+        <div class="table-row">
+            <div class="one table-column">6</div>
+            <div class="one table-column">7</div>
+            <div class="one table-column">8</div>
+        </div>
+        
+    </div>
+    <script type="text/javascript" charset="utf-8">
+        function isString(value){
+            return typeof value === 'string' && /[a-zA-z\-_]/g.test(value) && value.constructor === String
+        }
+
+        function arraySort(a,b,status){
+            var na = a,
+                nb = b,
+                al = a.length,
+                bl = b.length,
+                i = 0,
+                str = '',
+                type = false;
+            if(isString(a) && isString(b) && /[0-9]/g.test(al-1) && /[0-9]/g.test(bl-1)){  // 只有字符串最后一个是数字
+                for( i = 0; i < a.length; i++){
+                    if(a[i] != b[i]){
+                        break;
+                    }
+                }
+                str = a.slice(0,i);
+                if(/[0-9]/g.test(a[i]) && /[0-9]/g.test(a[i])){  // 除开前面相等的字符串以外，第一个字符串必须是数字
+                    if(!/[a-zA-z\-_]/g.test(a.slice(i)) && !/[a-zA-z\-_]/g.test(b.slice(i))){ // 判断除开相等的字符串以外，剩下的字符串都应该是数字
+                        na = parseFloat(a.slice(i));
+                        nb = parseFloat(b.slice(i));
+                        type = true;
+                    }
+                }
+            }else{
+                type = true;
+            }
+            if(type){
+                if(status){
+                    return nb - na
+                }else{
+                    return na - nb
+                }
+            }else{
+                return na > nb ? (status ? -1 : 1) : (status ? 1 : -1);
+            }
+        }
+        var arr = [1,2,4,4,3,3,1,5,3],
+            arr2 = [1,2,10,7,8,5],
+            arr3 = ['element1','element2','element10','element7','element8','element5'],
+            arr4 = ['George','John','Thomas','James','Adrew','Martin'],
+            arr5 = ['10','5','40','25','1000','1'],
+            arr6 = [10,5,40,25,1000,1],
+            arr7 = [1,9,5,6,3,4,23,456,32,2,41,23,34],
+            arr1 = [];
+        console.log('排序3************************************************');
+        arr3.sort(function(a,b){
+            // true  倒序（从大到小）   默认：顺序（从小到大）
+            return arraySort(a,b,true);
+        });
+        console.log(arr3);
+        arr4.sort(function(a,b){
+            return arraySort(a,b);
+        });
+        console.log(arr4);
+        arr5.sort(function(a,b){
+            return arraySort(a,b);
+        });
+        console.log(arr5);
+        arr6.sort(function(a,b){
+            return arraySort(a,b);
+        });
+        console.log(arr6);
+        console.log('排序************************************************');
+        arr2.sort(function(a,b){
+            return a > b ? 1 : -1;
+        });
+        console.log(arr2);
+        console.log('去重************************************************');
+        for(var i = 0; i < arr.length; i++){
+            if(arr1.indexOf(arr[i]) == -1){
+                arr1.push(arr[i]);
+            }
+        }
+        console.log('************************************************');
+        for(var i = 0; i < arr.length; i++){
+            if(arr1.indexOf(arr[i]) == -1){
+                if(arr.slice(i+1).indexOf(arr[i]) != -1){
+                    arr1.push(arr[i]);
+                }
+            }
+        }
+        console.log(arr1);
+        console.log('************************************************');
+
+        console.log('************************************************');
+        function fun(n,o){
+                console.log(o)
+                return{
+                    fun:function(m){
+                        return fun(m,n);
+                    }
+                };
+        }
+        var a = fun(0);   // undefined
+            a.fun(1);   // 0
+            a.fun(2);   // 0
+            a.fun(3);   // 0
+        var b = fun(0).fun(1).fun(2).fun(3);
+        // undefined  0  1  2
+        var c = fun(0).fun(1); c.fun(2); c.fun(3);
+        // undefined 0
+        // 1
+        // 1
+        console.log('************************************************');
+        var a = 100;
+        function testResult(){
+            console.log('a: '+a);   // undefined
+            var b = 2 * a;   // NaN
+            var a = 200;
+            var c = a / 2;  // 100
+            console.log('b: '+b);
+            console.log('c: '+c);
+        }
+        testResult();
+        console.log('************************************************');
+        var tt = "MR_LP -->  QQ ：3206064928";
+        function test(){
+                 console.log(tt);
+                var tt = "李鹏";
+                 console.log(tt);
+        }
+        test();
+
+        console.log('************************************************');
+        var test33 = (function(a33){
+            this.a33 = a33;
+            return function(b33){
+                return this.a33 + b33;
+            }
+        }(function(a33,b33){
+                return a33;
+        }(1,2)));
+
+        console.log(test33)
+        console.log(test33(1));
+    </script>
+</body>
+</html>

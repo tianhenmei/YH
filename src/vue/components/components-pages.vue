@@ -26,15 +26,19 @@
     </div>
 </template>
 <script>
+    import {mapState} from 'Vuex'
     import ScrollBar from './ScrollBar.js'
     import MW from './bus.js'
     import YHImage from './image.vue'
     import YHText from './text.vue'
+    import YHButton from './button.vue'
+    import YHTab from './tab.vue'
 
     const Elements = {
         'components-text':YHText,
         'components-image':YHImage,
-        // 'components-button':YHButton,
+        'components-button':YHButton,
+        'components-tab':YHTab
         // 'components-form':YHForm,
         // 'components-audio':YHAudio,
         // 'components-video':YHVideo
@@ -43,11 +47,6 @@
         data(){
             return {
                 currentPage:MW.currentPage,
-                defaultPage:{
-                    class:true,
-                    status:false
-                },
-                scroll:null,
                 pages:[{
                     class:true,
                     status:false,
@@ -55,9 +54,22 @@
                 }/*,{
                     class:true,
                     status:true
-                }*/]
+                }*/],
+                defaultPage:{
+                    class:true,
+                    status:false
+                },
+                scroll:null
             }
         },
+        // computed:mapState([
+        //     'currentPage',
+        //     'pages'
+        // ]),
+        // computed:mapGetters({
+        //     // 'currentPage':'getCurrentPage',
+        //     // 'pages':'getPages'
+        // }),
         created(){
             var that = this;
             MW.bus.$on('setPages',(pages) => {
