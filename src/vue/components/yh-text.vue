@@ -10,8 +10,8 @@
             @mousedown="deleteLastRange" 
             @mouseup="saveSelectionRange"
             @blur="contentChange"
+            rotate
             v-html="props.content">
-        
         </div>
         <!--@mousemove="saveSelectionRange"-->
         <div class="yh-edit-layer">

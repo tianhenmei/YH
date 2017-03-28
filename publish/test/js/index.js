@@ -33,7 +33,7 @@ var PageMove = function () {
                     now: (options.animation ? options.animation : "move") + "DNow"
                 }
             },
-            pageLength: $(".page").length - 1,
+            pageLength: $(".page").length,
             isMoving: false,
             clickStatus: false
         };

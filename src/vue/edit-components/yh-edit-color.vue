@@ -71,7 +71,15 @@
                 }
             },
             setValue(name,actualValue,value){
-                this.$emit('setValue',name,value,value)
+                if(this.options.backstatus){
+                    this.$emit('setValue',name,value,value)
+                }else{
+                    this.$store.commit('setValue',{
+                        stylename:name,
+                        actualValue:value,
+                        designValue:value
+                    })
+                }
             },
             setChangeStatus(e){
                 this.changeStatus = true

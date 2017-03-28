@@ -18,13 +18,19 @@
                     list:['无','实线','虚线','点状'],
                     realList:['none','solid','dashed','dotted'],
                     isChild:true,
+                    type:'text',
                     style:this.options
                 }
             }
         },
         methods:{
-            setValue(name,value){
-                this.$emit('setValue',name,value)
+            setValue(name,actualValue,designValue){
+                this.$store.commit('setValue',{
+                    stylename:name,
+                    actualValue:actualValue,
+                    designValue:designValue
+                })
+                this.optionsData.style[name] = this.options[name]
             }
         }
     }

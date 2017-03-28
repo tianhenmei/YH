@@ -28,6 +28,7 @@
                         realunit:'px',
                         type:'number',
                         isChild:true,
+                        backstatus:true,   // 回到父级
                         style:this.options
                     },
                     y:{
@@ -37,6 +38,7 @@
                         realunit:'px',
                         type:'number',
                         isChild:true,
+                        backstatus:true,
                         style:this.options
                     },
                     blur:{
@@ -46,6 +48,7 @@
                         realunit:'px',
                         type:'number',
                         isChild:true,
+                        backstatus:true,
                         style:this.options
                     }
                 },
@@ -56,18 +59,12 @@
                     chinese:'',
                     isChild:true,
                     style:this.options,
+                    backstatus:true
                 },
                 changeStatus:false
             }
         },
-        watch:{
-            // boxShadow:{
-            //     handler(nvalue,ovalue){   // ovalue ：旧值   nvalue ： 新值
-            //         console.log(ovalue+' , '+nvalue)
-            //     },
-            //     deep: true
-            // }
-        },
+        watch:{},
         methods:{
             setChangeStatus(status){
                 this.changeStatus = true
@@ -75,33 +72,36 @@
             },
             setValue(name,value,designValue){
                 this.shadowColor.value = value
-                this.$emit('setValue',name,value,value,false)
-                this.setShadow(value)
-                // this.$emit('setValue',name,value,designValue)
+                this.options[name] = value
+                this.setShadow()
             },
             setX(name,value,designValue){  // value = designValue
                 this.list.x.value = value
-                this.$emit('setValue',name,value,value,false)
-                this.setShadow(value)
+                this.options[name] = value
+                this.setShadow()
             },
             setY(name,value,designValue){
                 this.list.y.value = value
-                this.$emit('setValue',name,value,value,false)
-                this.setShadow(value)
+                this.options[name] = value
+                this.setShadow()
             },
             setBlur(name,value,designValue){
                 this.list.blur.value = value
-                this.$emit('setValue',name,value,value,false)
-                this.setShadow(value)
+                this.options[name] = value
+                this.setShadow()
             },
-            setShadow(value){
+            setShadow(){
                 let last = 
                     (/(px)/g.test(this.options['box-shadow-x'] + '') ? this.options['box-shadow-x'] : this.options['box-shadow-x'] + 'px') + ' ' + 
                     (/(px)/g.test(this.options['box-shadow-y'] + '') ? this.options['box-shadow-y'] : this.options['box-shadow-y'] + 'px') + ' ' + 
                     (/(px)/g.test(this.options['box-shadow-blur'] + '') ? this.options['box-shadow-blur'] : this.options['box-shadow-blur'] + 'px') + ' ' + 
                     this.options['box-shadow-color']
                 
-                this.$emit('setValue','box-shadow',last,last)
+                this.$store.commit('setValue',{
+                    stylename:'box-shadow',
+                    actualValue:last,
+                    designValue:last
+                })
             },
         }
     }

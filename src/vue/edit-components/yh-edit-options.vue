@@ -16,8 +16,9 @@
                 ' yh-edit-choose yh-edit-'+options.stylename+' clearfix'" 
          @mouseleave="hideEditList">
         <div class="yh-edit-text" @click.stop="showEditList">{{options.name}}{{options.name ? ': ' : ''}}</div>
-        <div class="yh-edit-value" @click.stop="showEditList">{{options.style[options.stylename] ? options.style[options.stylename] : value}}{{options.unit}}</div>
-        <div class="yh-edit-arrow" @click.stop="showEditList"></div>
+        <div class="yh-edit-value" @click.stop="showEditList">{{options.style[options.stylename] ? getDesignValue : value}}{{options.unit}}</div>
+        <!--<div class="yh-edit-value" @click.stop="showEditList">{{options.style[options.stylename] ? options.style[options.stylename] : value}}{{options.unit}}</div>
+        --><div class="yh-edit-arrow" @click.stop="showEditList"></div>
         <div class="yh-edit-list">
             <ul>
                 <li 
@@ -34,6 +35,7 @@
     </div>
 </template>
 <script>
+    import {mapState} from 'vuex'
     export default {
         props:['options'],
         data(){
@@ -41,6 +43,23 @@
                 value:0
             }
         },
+        computed:mapState({
+            getDesignValue(state){
+                let actualValue = this.options.style[this.options.stylename],
+                    value,
+                    index,
+                    status = false
+
+                if(this.options.type === 'number'){
+                    status = /(px)/g.test(actualValue)
+                    value = parseFloat(actualValue)
+                }else{
+                    value = actualValue
+                }
+                index = this.options.realList.indexOf(value)
+                return status ? value : (index == -1 ? '' : this.options.list[index])
+            }
+        }),
         methods:{
             showEditList(e){
                 $(e.target).closest('.yh-edit-choose').children('.yh-edit-list').show()
@@ -57,6 +76,7 @@
                     list = $(e.target).closest('.yh-edit-list')
                 this.value = svalue
                 list.hide()
+                
                 this.$emit('setValue',this.options.stylename,value+this.options.realunit,svalue+this.options.unit)
             }
         }

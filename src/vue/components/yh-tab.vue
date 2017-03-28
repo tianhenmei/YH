@@ -1,6 +1,6 @@
 <template>
     <div 
-        :id="status ? props.id : ''" 
+        :id="props.id" 
         :style="props.position" 
         :class="props.classname" yh-tab>
 
@@ -15,7 +15,7 @@
         <div yh-tab-content>
             <div v-for="(tab,index) in props.base.tabs"
                 :class="active == index ? 'yh-tab-active' : ''">
-                <div v-if="status" v-for="(element,index) in tab.elements" :is="element.yh_module" :props="element.props">
+                <div v-for="(element,index) in tab.elements" :is="element.yh_module" :props="element.props">
 
                 </div>
                 <slot :name="'content'+index"></slot>
@@ -25,9 +25,10 @@
     </div>
 </template>
 <script>
-    import YHImage from './image.vue'
-    import YHText from './text.vue'
-    import YHButton from './button.vue'
+    import YHImage from './yh-image.vue'
+    import YHText from './yh-text.vue'
+    import YHButton from './yh-button.vue'
+    import YHAudio from './yh-audio.vue'
     const Elements = {
         'yh-text':YHText,
         'yh-image':YHImage,
@@ -56,8 +57,6 @@
                     index = target.index()
 
                 if(index != this.active){
-                    // $('.setting').removeClass('setting')
-                    // $('.yh-selection').hide()
                     this.active = index
                 }
             }

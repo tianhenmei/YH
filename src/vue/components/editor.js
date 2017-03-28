@@ -6,7 +6,7 @@ class Editor{
             height:60 / (750 / 16) + 'rem',
             'line-height':60 / (750 / 16) + 'rem',
             'background-image':'',
-            'font-size':'36px',
+            'font-size':36 / (750 / 16) + 'rem',
             'color':'#ffffff',
             'background-color':'#ff0084',
             'border-width':'0',
@@ -21,10 +21,10 @@ class Editor{
         }
     }
     // setEditData: 在元素被点击时调用，初始化数据
-    setEditData(self){
+    setEditData(self,type){
         let elem = self.$el,
             elemID = elem.id,
-            button = $(elem).find('.yh-button')[0],
+            button = $(elem).find('.yh-'+type)[0],
             style = button.style.cssText,
             json = Object.assign({},JSON.parse(JSON.stringify(this.style)),Execute.getStyleJSON(style)),
             value,

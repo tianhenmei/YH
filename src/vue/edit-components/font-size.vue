@@ -15,17 +15,26 @@
                     stylename:'font-size',
                     unit:'px',
                     realunit:'rem',
-                    list:[24, 26, 28, 30, 36, 38, 40, 42, 44, 46, 48, 60, 72, 96, 108, 120],
-                    realList:[0.512, 0.5546666666666666, 0.5973333333333334, 0.64, 0.768, 
-                            0.8106666666666666, 0.8533333333333334, 0.896, 0.9386666666666666,
-                            0.9813333333333333, 1.024, 1.28, 1.536, 2.048, 2.304, 2.56],
+                    list:[24, 26, 28, 30, 36,
+                          38, 40, 42, 44, 46, 
+                          48, 60, 72, 96, 108, 120],
+                    realList:[0.512, 0.555, 0.597, 0.64, 0.768, 
+                            0.811, 0.853, 0.896, 0.937,0.981, 
+                            1.024, 1.28, 1.536, 2.048, 2.304, 2.56],
+                    type:'number',
                     style:this.options
                 }
             }
         },
         methods:{
-            setValue(name,value){
-                this.$emit('setValue',name,value)
+            setValue(name,actualValue,designValue){
+                let stylename = 'font-size'
+                this.$store.commit('setValue',{
+                    stylename:stylename,
+                    actualValue:actualValue,
+                    designValue:designValue
+                })
+                this.optionsData.style[stylename] = this.options[stylename]
             }
         }
     }

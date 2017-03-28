@@ -5,7 +5,7 @@
                 <div class="yh-page-edit">
                     {{index+1}}
                 </div>
-                <div class="yh-page-center" id="'pageCanvas'+index">
+                <div class="yh-page-center" :id="'pageCanvas'+index">
                     <div class="yh-page-canvas" :style="page.background">
                         <div v-for="element in page.elements" :is="element.yh_module"
                             :props="element.props"
@@ -13,10 +13,10 @@
                         </div>
                     </div>
                 </div>
-                <div :class="{'yh-page-selected':page.class, 'yh-page-hide':page.status}">
+                <div :class="'yh-page-selected'+(currentPage == index ? '' : (pageStatus[index].status ? '' :' yh-page-hide'))">
                     <div class="yh-page-add" @click.stop.prevent="addPage">+</div>
                 </div>
-                <div :class="{'yh-page-remove':page.class, 'yh-page-hide':page.status}" @click.stop.prevent="removePage"></div>
+                <div :class="'yh-page-remove'+(currentPage == index ? '' : (pageStatus[index].status ? '' :' yh-page-hide'))" @click.stop.prevent="removePage"></div>
             </li>
         </ul>
         <div class="yh-page-bottom"></div>
@@ -26,85 +26,81 @@
     </div>
 </template>
 <script>
-    import {mapState} from 'Vuex'
+    import {mapState,mapGetters} from 'vuex'
     import ScrollBar from './ScrollBar.js'
     import MW from './bus.js'
-    import YHImage from './image.vue'
-    import YHText from './text.vue'
-    import YHButton from './button.vue'
-    import YHTab from './tab.vue'
+    import YHImage from './yh-image.vue'
+    import YHText from './yh-text.vue'
+    import YHButton from './yh-button.vue'
+    import YHTab from './yh-tab.vue'
+    import YHAudio from './yh-audio.vue'
 
     const Elements = {
         'components-text':YHText,
         'components-image':YHImage,
         'components-button':YHButton,
-        'components-tab':YHTab
+        'components-tab':YHTab,
+        'components-audio':YHAudio,
         // 'components-form':YHForm,
-        // 'components-audio':YHAudio,
         // 'components-video':YHVideo
     }
     export default {
         data(){
             return {
-                currentPage:MW.currentPage,
-                pages:[{
-                    class:true,
-                    status:false,
-                    elements:[]
-                }/*,{
-                    class:true,
-                    status:true
-                }*/],
-                defaultPage:{
-                    class:true,
-                    status:false
-                },
-                scroll:null
+                pageStatus:[],
+                scroll:null,
+                title:'components-pages title'
             }
         },
-        // computed:mapState([
-        //     'currentPage',
-        //     'pages'
-        // ]),
-        // computed:mapGetters({
-        //     // 'currentPage':'getCurrentPage',
-        //     // 'pages':'getPages'
-        // }),
+        computed:{
+            ...mapState([
+                'currentPage',
+                'pages'
+            ])
+        },
+        watch:{
+            pages(newv,oldv){
+                console.log('page change')
+                if(this.pages.length > 1){
+                    if(this.pageStatus.length == 0){
+                        // this.initScroll(this.pages.length - 1)
+                        this.initScroll(this.pages.length)
+                    }else{
+                        this.initScroll(1)
+                    }
+                }else{
+                    this.initScroll(1)
+                }
+                for(let i = this.pageStatus.length; i < this.pages.length; i++){
+                    this.pageStatus.push({
+                        status:false
+                    })
+                }
+                this.pageStatus[this.currentPage].status = true
+            },
+            currentPage(newv,oldv){
+                this.pageStatus[oldv].status = false
+                this.pageStatus[newv].status = true
+            }
+        },
         created(){
             var that = this;
-            MW.bus.$on('setPages',(pages) => {
-                that.setPages(pages)
-            })
-            // MW.bus.$on('drawSmallPage',() => {
-            //     that.drawPage(undefined)
-            // })
+        },
+        mounted(){
+            this.initScroll(0)
         },
         methods:{
             setPages(pages){
-                this.pages = []
-                for(let p = 0; p < pages.length; p++){
-                    if(p == 0){
-                        this.pages.push(Object.assign({},{
-                            class:true,
-                            status:false
-                        },pages[p]));
-                    }else{
-                        this.pages.push(Object.assign({},{
-                            class:true,
-                            status:true
-                        },pages[p]));
-                    }
-                }
                 this.initScroll(this.pages.length - 1)
             },
             pageenter(e){
                 var index = Math.floor(e.target.attributes.page.value);
-                this.pages[index].status = false;
+                this.pageStatus[index].status = true;
             },
             pageleave(e){
                 var index = Math.floor(e.target.attributes.page.value);
                 if(this.currentPage != index){
-                    this.pages[index].status = true;
+                    this.pageStatus[index].status = false;
                 }
             },
             changePage(e){
@@ -131,21 +127,18 @@
                 selected.className = (selected.className+'').replace('yh-page-hide','')
                 remove.className = (remove.className+'').replace('yh-page-hide','')
 
-                this.currentPage = index;
-                MW.bus.$emit('changePage',index)
+                this.$store.commit('setCurrentPage',index)
+                $('.yh-selection').hide()
             },
             addPage(e){
                 var index = Math.floor(e.target.parentNode.parentNode.attributes.page.value)
-                var self = this
-                MW.bus.$emit('addPage',index+1,function(page){
-                    self.pages.splice(index+1,0,Object.assign({},self.defaultPage,page));
-                    self.setScroll(1);
-                });
+                
+                this.$store.commit('addPage',index)
+                // this.setScroll(1);
             },
             removePage(e){
                 var index = Math.floor(e.target.parentNode.attributes.page.value);
-                this.pages.splice(index,1);
-                MW.bus.$emit('removePage',index);
+                this.$store.commit('removePage',index)
                 this.setScroll(-1);
             },
             initScroll(mode){
@@ -167,9 +160,6 @@
             setScroll(mode){
                 this.scroll.init(mode);  // {scroll:this.scroll}
             }
-        },
-        mounted(){
-            this.initScroll(0)
         }
     }
 </script>

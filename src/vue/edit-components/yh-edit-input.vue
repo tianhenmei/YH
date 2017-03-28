@@ -19,7 +19,7 @@
         <div class="yh-edit-value clearfix">
             <input
                 :type="options.type"
-                :value="options.style[options.stylename] ? options.style[options.stylename] : (options.type == 'number' ? 0 : '')"
+                :value="options.style[options.stylename] ? getDesignValue : (options.type == 'number' ? 0 : '')"
                 @input="setValue"
             />
             <span>{{options.unit}}</span>
@@ -28,14 +28,31 @@
     </div>
 </template>
 <script>
+    import {mapState} from 'vuex'
     export default {
         data(){
             return {}
         },
         props:['options'],
+        computed:mapState({
+            getDesignValue(state){
+                let actualValue = this.options.style[this.options.stylename]
+                if(this.options.type === 'number'){
+                    let value = parseFloat(actualValue)
+                    if(this.options.unit === this.options.realunit){
+                        return value
+                    }
+                    return this.getDesign(value)
+                }
+                return actualValue
+            }
+        }),
         methods:{
+            getDesign(value){
+                return value * (750 / 16)
+            },
             getRemValue(value){
-                return value / (750 / 16);
+                return value / (750 / 16)
             },
             setValue(e){
                 let target = e.target,
@@ -47,7 +64,15 @@
                 
                 // actualValue : 实际上使用的值
                 // value : 展示用的值 （designValue）
-                this.$emit('setValue',stylename,actualValue,value)
+                // this.$emit('setValue',stylename,actualValue,value)
+                this.$store.commit('setValue',{
+                    stylename:stylename,
+                    actualValue:actualValue,
+                    designValue:value
+                })
+                if(this.options.backstatus){
+                    this.$emit('setValue',stylename,actualValue,value)
+                }
             }
         }
     }

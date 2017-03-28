@@ -23,7 +23,7 @@ var config = {
     resolve: {
         extensions: ['', '.js', '.vue'],
         alias: {
-            'Vue': 'vue/dist/vue.js'
+            'Vue': 'vue/dist/vue.js',  //./node_modules/vue/dist/vue.js'//
         }
     },
     module: {

@@ -21,8 +21,14 @@
             }
         },
         methods:{
-            setValue(name,value,designValue){
-                this.$emit('setValue',name,value,designValue)
+            setValue(name,actualValue,designValue){
+                this.$store.commit('setValue',{
+                    stylename:name,
+                    actualValue:actualValue,
+                    designValue:designValue
+                })
+                this.optionsData.style[name] = this.options[name]
+                // this.$emit('setValue',name,value,designValue)
             }
         }
     }

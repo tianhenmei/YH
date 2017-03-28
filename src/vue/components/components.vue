@@ -7,19 +7,19 @@
     <div kitty-components>
         <div class="yh-components-content">
             <h1 class="yh-title">{{title}}</h1>
-            <components-content></components-content>
+            <components-content ref="yh-content"></components-content>
             <components-pages></components-pages>
             <components-edit></components-edit> <!--  v-on:addChild="componentAdd" -->
         </div>
     </div>
 </template>
 <script>
-    // import $ from '../../common/js/lib/jquery.1.10.1.min.js'
     import store from './store/index.js'
     import MW from './bus.js'
     import Pages from './components-pages'
     import Content from './components-content'
     import Edit from './components-edit'
+
     export default {
         data(){
             return {
@@ -28,8 +28,7 @@
         },
         store,
         mounted(){
-            this.init();
-            this.initEvent();
+            this.init()
         },
         components:{
             'components-pages':Pages,
@@ -38,21 +37,12 @@
         },
         methods:{
             init(){
-                
+                this.initEvent()
             },
             initEvent(){
-                this.initUndoEvent()
-                this.initCompleteEvent()
-            },
-            initCompleteEvent(){
-                $(document).on('click','#complate',function(e){
-                    $('.setting').removeClass('setting')
-                    $('.yh-selection').hide()
-                });
-            },
-            initUndoEvent(){
                 document.addEventListener('click',function(e){
-                    if($(e.target).closest('[id]').length > 0){
+                    let app = $(e.target).closest('[id]')
+                    if(app.length > 0 && app[0].id != 'app'){
                         return
                     }
                     let setting = document.getElementsByClassName('setting'),
@@ -69,7 +59,7 @@
                         }
                     }
                     MW.isMoving = false
-                },false);
+                },false)
             },
             componentAdd(){
                 console.log('components componentAdd');

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>vue props</title>
+    <link type="text/css" rel="stylesheet" href="/static/css/init.css" />
+    <style>
+        * {
+            margin:0;
+            padding:0;
+        }
+        .demo {
+            -webkit-perspective:1px;
+            perspective: 1px; 
+            padding: 0; height: 600px; height: calc(100vh - 300px); overflow: auto;
+        }
+        .box {
+            height: 1280px;
+            -webkit-transform-style: preserve-3d;
+            transform-style: preserve-3d;
+            position: relative;
+            /*background:#ff0;*/
+        }
+        .iphone {
+            position: absolute; 
+            left: 50%;
+            transform: translate3D(-50%, -120px, -2px) scale(3);
+        }
+
+        .smile, .flower, .music, .pdf {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            background:url('http://www.zhangxinxu.com/study/201503/mobile_1_layer2.png') no-repeat 0 0;
+            transform: translate(-50%,-50%);
+        }
+        .smile {
+            width: 64px;
+            height: 64px;
+            margin: -400px 0 0 -400px;
+        }
+        .flower {
+            width: 268px;
+            height: 229px;
+            background-position: 0 -56px;
+            margin: -320px 0 0 400px;
+            transform: translate3D(220px,0,-1px) scale(2);
+        }
+        .music {
+            width: 114px;
+            height: 114px;
+            background-position: -10px -297px;
+            margin: -40px 0 0 -300px;
+        }
+        .pdf {
+            width: 130px;
+            height: 120px;
+            background-position: -10px -423px;
+            margin: 140px 0 0 500px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo">
+        <div class="box">
+            <img src="http://www.zhangxinxu.com/study/201503/mobile_1_iphone.jpg" class="iphone">
+            <i class="smile"></i><i class="flower"></i><i class="music"></i><i class="pdf"></i>
+        </div>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+    </script>
+</body>
+</html>

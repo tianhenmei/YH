@@ -16,7 +16,7 @@
                         <input type="color" mold="backgroundColor" />
                     </li>
                     <li edit="background-image">
-                        <input type="file" content="src" accept="image/*" mold="backgroundImage" />
+                        <input type="file" content="src" accept="image/*" mold="backgroundImage" @change="uploadFile" />
                     </li>
                 </ul>
             </div>
@@ -39,33 +39,33 @@
                 <p class="center"></p>
                 <p></p>
             </div>
-            <div class="yh-selectOpera yh-selection">
+            <!--<div class="yh-selectOpera yh-selection">
                 <span id="delete" @click.stop="removeElement">x</span>
                 <span id="complate">√</span>
-            </div>
+            </div>-->
 
             <div id="yh-move-box"></div>
         </div>
     </div>
 </template>
 <script>
-    import $ from '../../common/js/lib/jquery.1.10.1.min.js'
-    import {mapState} from 'Vuex'
+    import {mapState} from 'vuex'
     import MW from './bus.js'
     import Drag from './drag.js'
-    import YHImage from './image.vue'
-    import YHText from './text.vue'
-    import YHButton from './button.vue'
-    import YHTab from './tab.vue'
+    import YHImage from './yh-image.vue'
+    import YHText from './yh-text.vue'
+    import YHButton from './yh-button.vue'
+    import YHTab from './yh-tab.vue'
+    import YHAudio from './yh-audio.vue'
 
     const Elements = {
         'components-text':YHText,
         'components-image':YHImage,
         'components-button':YHButton,
-        'components-tab':YHTab
+        'components-tab':YHTab,
+        'components-audio':YHAudio
         // 'components-button':YHButton,
         // 'components-form':YHForm,
-        // 'components-audio':YHAudio,
         // 'components-video':YHVideo
     }
     export default {
@@ -74,35 +74,35 @@
         },
         data(){
             return {
-                pages:[{
-                        elements:[/*{
-                            yh_id:'element0',
-                            yh_module:YHImage,
-                            module:'image',
-                            props:{
-                                id:'element0',
-                                style:{
-                                    width:this.getRem(181),
-                                    height:this.getRem(181)
-                                },
-                                position:{
-                                    left:0,
-                                    top:0
-                                },
-                                src:MW.host+'static/images/Helen.png',
-                                href:''
-                            }
-                        }*/],
-                        background:{
-                            backgroundColor:'transparent',
-                            backgroundImage:'',
-                            backgroundRepeat:'no-repeat',
-                            backgroundPosition:'0 0',
-                            backgroundSize:'100% 100%'
-                        }
-                    }
-                ],
-                currentPage:MW.currentPage,
+                // pages:[{
+                //         elements:[/*{
+                //             yh_id:'element0',
+                //             yh_module:YHImage,
+                //             module:'image',
+                //             props:{
+                //                 id:'element0',
+                //                 style:{
+                //                     width:this.getRem(181),
+                //                     height:this.getRem(181)
+                //                 },
+                //                 position:{
+                //                     left:0,
+                //                     top:0
+                //                 },
+                //                 src:MW.host+'static/images/Helen.png',
+                //                 href:''
+                //             }
+                //         }*/],
+                //         background:{
+                //             backgroundColor:'transparent',
+                //             backgroundImage:'',
+                //             backgroundRepeat:'no-repeat',
+                //             backgroundPosition:'0 0',
+                //             backgroundSize:'100% 100%'
+                //         }
+                //     }
+                // ],
+                // currentPage:MW.currentPage,
                 drag:null,
                 fontSize:16,
                 distance:15,
@@ -113,10 +113,10 @@
                 moveStatus:false
             }
         },
-        // computed:mapState([
-        //     'currentPage',
-        //     'pages'
-        // ]),
+        computed:mapState([
+            'currentPage',
+            'pages'
+        ]),
         created(){
             var that = this
             MW.bus.$on('addChild',name => {
@@ -139,11 +139,6 @@
             })
             MW.bus.$on('pageAnimation',(value) => {
                 that.pageAnimation = value
-            })
-            MW.bus.$on('changePage',(index) => {
-                that.currentPage = index
-                $('.setting').removeClass('setting')
-                $('.yh-selection').hide()
             })
             MW.bus.$on('focusSelection',() => {
                 that.drag.status = false
@@ -203,11 +198,6 @@
             initEvent(){ 
                 var components_content = $('.yh-content-center')
                 var self = this;
-                // 初始化文件上传事件
-                $('.yh-components-content').on('change','input[type="file"]',function(e){
-                    var file = this.files[0];
-                    self.fileChange(file,this,self);
-                })
                 // 设置拖动事件
                 this.drag = new Drag({
                     outer:'.yh-components-content',
@@ -227,7 +217,6 @@
                 //     $(this).children('.yh-edit-layer').hide();
                 // })
 
-                this.initRemoveEvent()
                 this.initColorEvent()
                 this.initSizeChangeEvent()
             },
@@ -239,18 +228,6 @@
                 this.pages[this.currentPage].elements.splice(index,1)
                 // elem.remove();
                 $('.yh-selection').hide()
-            },
-            initRemoveEvent(){
-                // var self = this;
-                // $(document).on('click','#delete',function(e){
-                //     e.stopPropagation()
-                //     var elem = $('.setting'),
-                //         elemID = elem.attr('id');
-                    
-                //     var index = self.getIndex(elemID,self)
-                //     self.pages[self.currentPage].elements.splice(index,1)
-                //     elem.remove();
-                // });
             },
             initColorEvent(){
                 let input = $('input[type="color"]')
@@ -313,7 +290,7 @@
 
                     transform = elem.find('[rotate]')[0].style.transform //elem.find('[rotate]').css('transform')
                     // oangle = transform == 'none' ? 0 : eval('self.get'+transform.replace(/[XYZ]/g,''))
-                    oangle = transform == 'none' ? 0 : parseInt(transform.match(/rotate[XYZ]{0,1}\(([0-9]*)deg\)/)[1])
+                    oangle = (transform == 'none' || transform == '') ? 0 : parseInt(transform.match(/rotate[XYZ]{0,1}\(([0-9]*)deg\)/)[1])
 
                     let parent = $(this).parent(),
                         isCenter = $(this).hasClass('center')
@@ -434,21 +411,36 @@
                         last.left = self.getPointValue(move_box,'left') - distance
                         last.top = self.getPointValue(move_box,'top') - distance
                         last.transform = move_box[0].style.transform
-
-                        let index = self.getIndex(elemID,self)
-
-                        self.pages[self.currentPage].elements[index].props.style.width = self.toRem(last.width);
-                        self.pages[self.currentPage].elements[index].props.style.height = self.toRem(last.height);
-                        self.pages[self.currentPage].elements[index].props.position.left = self.toRem(last.left);
-                        self.pages[self.currentPage].elements[index].props.position.top = self.toRem(last.top);
-                        self.pages[self.currentPage].elements[index].props.style.webkitTransform = last.transform
-                        self.pages[self.currentPage].elements[index].props.style.transform = last.transform
+                        
+                        self.$store.commit('setMultipleValue',[{
+                            parent:'position',
+                            stylename:'left',
+                            actualValue:self.toRem(last.left)
+                        },{
+                            parent:'position',
+                            stylename:'top',
+                            actualValue:self.toRem(last.top)
+                        },{
+                            parent:'style',
+                            stylename:'width',
+                            actualValue:self.toRem(last.width)
+                        },{
+                            parent:'style',
+                            stylename:'height',
+                            actualValue:self.toRem(last.height)
+                        },{
+                            parent:'rotate',
+                            stylename:'-webkit-transform',
+                            actualValue:last.transform
+                        },{
+                            parent:'rotate',
+                            stylename:'transform',
+                            actualValue:last.transform
+                        }])
                         MW.isMoving = true
                         self.distance = 0
-                        // self.settingBox(move_box)
                         self.addSettingBox(move_box)
                         self.distance = distance
-                        // self.mousedownCallback($('.yh-content-center'),elem)
                     }
                     move_box.hide()
                     down = false
@@ -514,37 +506,36 @@
                 let name = that.attr('mold')
                 let color = that.val()
                 
-                self.pages[self.currentPage]['background'][name] = color
+                self.$store.commit('setPageData',{
+                    parent:'background',
+                    stylename:name,
+                    value:color
+                })
             },
             fileChange(file,that,self){
                 var fileData = new FormData();
                 fileData.append('files',file,file.name);
-                $.ajax({
-                    type:'post',
-                    url:MW.host+'editor/upload',
-                    data:fileData,
-                    dataType: 'JSON',  
-                    cache: false,  
-                    processData: false,  
-                    contentType: false,
-                    success(data){
-                        var name = that.attributes['mold'].value
-                        switch(name){
-                            case 'image':
-                                self.imageChange(self,data.content)
-                                break
-                            case 'button':
-                                self.setBackgroundImage(self,data.content,'yh-button')
-                                break
-                            case 'backgroundImage':
-                                self.pages[self.currentPage].background.backgroundImage = "url("+MW.host+data.content.path+")";
-                                break
+                (function(self){
+                    $.ajax({
+                        type:'post',
+                        url:MW.host+'editor/upload',
+                        data:fileData,
+                        dataType: 'JSON',  
+                        cache: false,  
+                        processData: false,  
+                        contentType: false,
+                        success(data){
+                            self.$store.commit('setPageData',{
+                                parent:'background',
+                                stylename:'backgroundImage',
+                                value:"url("+MW.host+data.content.path+")"
+                            })
+                        },
+                        error(error){
+                            console.log(error.message);
                         }
-                    },
-                    error(error){
-                        console.log(error.message);
-                    }
-                });
+                    });
+                })(self)
             },
             imageChange(self,data){
                 var elem = $('.setting'),
@@ -638,27 +629,25 @@
                 $('.setting > .yh-edit-layer').hide();
             },
             mouseupCallback(elem,move_box,x,y,distance){
-                let elemID = elem.attr('id'),
-                    index = this.getIndex(elemID,this),
-                    elements = this.getElementsData(elemID,this),
-                    self = this,
+                let self = this,
                     xx = self.toRem(x - distance),
                     yy = self.toRem(y - distance - self.getParentTop(elem))
-                elem.css({
-                    'left':xx,
-                    'top':yy
-                });
-                
-                elements[index].props.position.left = xx;
-                elements[index].props.position.top = yy;
+
+                self.$store.commit('setMultipleValue',[{
+                    parent:'position',
+                    stylename:'left',
+                    actualValue:xx
+                },{
+                    parent:'position',
+                    stylename:'top',
+                    actualValue:yy
+                }])
                 
                 move_box.css({
                     'display':'none'
                 });
 
-                // self.settingBox(elem)
                 self.addSettingBox(elem)
-                // self.addSetEvent()
             },
             complexAddElement(elem,name){
                 let complex = elem.closest('[yh-tab]'),   // 第一层
@@ -734,6 +723,11 @@
             // drawSmallPage(){
             //     MW.bus.$emit('drawSmallPage')
             // },
+            uploadFile(e){
+                let that = e.target,
+                    file = that.files[0]
+                this.fileChange(file,that,this)
+            },
 
 
 
@@ -752,6 +746,12 @@
             },
             recoveryPage(self,elements){
                 for(let j = 0; j < elements.length; j++){
+                    if(!elements[j].props.rotate){
+                        elements[j].props.rotate = {
+                            '-webkit-transform':'none',
+                            'transform':'none'
+                        }
+                    }
                     switch(elements[j].module){
                         case 'image':
                             elements[j].yh_module = YHImage;
@@ -762,8 +762,6 @@
                             break
                         case 'button':
                             elements[j].yh_module = YHButton
-                            // elements[j].props['event-type'] = elements[j].props['event-type'] ? elements[j].props['event-type'] : '无'
-                            // elements[j].props['entype'] = elements[j].props['entype'] ? elements[j].props['entype'] : 'none'
                             break
                         case 'form':
                             elements[j].yh_module = YHForm;
@@ -792,16 +790,30 @@
                     },
                     success:function(result){
                         result.content.json = result.content.json.replace(/(url\(\")/g,'url\(').replace(/(\"\))/g,')')
-                        var data = JSON.parse(result.content.json);
-                        self.pages = [];
+                        var data = JSON.parse(result.content.json),
+                            pages = []
                         self.count = data.count;
                         self.eventList = data.eventList
-                        for(let i = 0; i < data.pages.length; i++){
-                            self.pages.push(JSON.parse(JSON.stringify(data.pages[i])));
-                            self.recoveryPage(self,self.pages[i].elements)
+                        if(data.pages){
+                            for(let i = 0; i < data.pages.length; i++){
+                                pages.push(JSON.parse(JSON.stringify(data.pages[i])));
+                                self.recoveryPage(self,pages[i].elements)
+                            }
+                            self.$store.commit('init',pages)
+                        }else{
+                            self.$store.commit('create')
                         }
+                        // MW.bus.$emit('setPages',pages)
+                        // var data = JSON.parse(result.content.json);
+                        // self.pages = [];
+                        // self.count = data.count;
+                        // self.eventList = data.eventList
+                        // for(let i = 0; i < data.pages.length; i++){
+                        //     self.pages.push(JSON.parse(JSON.stringify(data.pages[i])));
+                        //     self.recoveryPage(self,self.pages[i].elements)
+                        // }
                         // self.$store.commit('init',self.pages)
-                        MW.bus.$emit('setPages',self.pages)
+                        // MW.bus.$emit('setPages',self.pages)
                     },
                     error:function(error){
                         console.log(error.message);
@@ -846,11 +858,6 @@
                 for(let attr in this.$data){
                     switch(attr){
                         case 'pages':
-                            data.pages = [];
-                            for(let i = 0; i < this.$data[attr].length; i++){
-                                data.pages.push(JSON.parse(JSON.stringify(this.$data[attr][i])));
-                                this.changePageDataSave(data.pages[i].elements)
-                            }
                             break;
                         case 'drag':
                             break
@@ -858,6 +865,11 @@
                             data[attr] = this.$data[attr]
                             break
                     }
+                }
+                data.pages = [];
+                for(let i = 0; i < this.$store.state.pages.length; i++){
+                    data.pages.push(JSON.parse(JSON.stringify(this.$store.state.pages[i])));
+                    this.changePageDataSave(data.pages[i].elements)
                 }
                 $.ajax({
                     type:'post',
@@ -956,10 +968,10 @@
                     'left':checkedboxStyle.left+checkedboxStyle.width+'px',
                     'top':checkedboxStyle.top+'px'
                 })
-                $(selectParent+' .yh-selectOpera').css({
-                    'left':checkedboxStyle.left+5+'px',
-                    'top':checkedboxStyle.top+5+'px'
-                })
+                // $(selectParent+' .yh-selectOpera').css({
+                //     'left':checkedboxStyle.left+5+'px',
+                //     'top':checkedboxStyle.top+5+'px'
+                // })
                 $(selectParent+' .yh-selection').css('display','block')
             }
         }

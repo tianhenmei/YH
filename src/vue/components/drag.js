@@ -118,6 +118,7 @@ class Drag{
             }
         })
         body.on('mousemove',function(e){
+            e.preventDefault() 
             if(self.status){
                 self.mousemove(e.clientX,e.clientY,self);
             }else{

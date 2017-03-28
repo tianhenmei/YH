@@ -5,7 +5,7 @@
             :options="color"
             @setValue="setBorderColor" 
             @setChangeStatus="setChangeStatus" ></yh-edit-color>
-        <border-style :options="options" @setValue="setBorderStyle"></border-style>
+        <border-style :options="options"></border-style>
         <yh-edit-input :options="radius" @setValue="setRadius"></yh-edit-input>
     </div>
 </template>
@@ -61,8 +61,14 @@
             setValue(name,value){
                 this.$emit('setValue',name,value,value)
             },
-            setRadius(name,value,designValue){
-                this.$emit('setValue',name,value,value)
+            setRadius(name,actualValue,designValue){
+                this.$store.commit('setValue',{
+                    stylename:name,
+                    actualValue:actualValue,
+                    designValue:designValue
+                })
+                this.optionsData.style[name] = this.options[name]
+                // this.$emit('setValue',name,actualValue,actualValue)
             }
         }
     }
