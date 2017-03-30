@@ -1,12 +1,12 @@
 <template>
     <div class="yh-edit-options yh-edit-shadow clearfix">
-        <yh-edit-input @setValue="setX" :options="list.x"></yh-edit-input>
-        <yh-edit-input @setValue="setY" :options="list.y"></yh-edit-input>
-        <yh-edit-input @setValue="setBlur" :options="list.blur"></yh-edit-input>
+        <yh-edit-input @setValue="setX" :options="list.x" :type="type"></yh-edit-input>
+        <yh-edit-input @setValue="setY" :options="list.y" :type="type"></yh-edit-input>
+        <yh-edit-input @setValue="setBlur" :options="list.blur" :type="type"></yh-edit-input>
         <yh-edit-color 
             @setValue="setValue" 
             @setChangeStatus="setChangeStatus" 
-            :options="shadowColor"></yh-edit-color>
+            :options="shadowColor" :type="type"></yh-edit-color>
     </div>
 </template>
 <script>

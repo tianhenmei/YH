@@ -237,7 +237,28 @@ let store = new Vuex.Store({
                 state.data.elemData.props.states = [];
             }
             for(i = 0; i < data.length; i++){
-                one[data[i]] = state.data.elemData.props.style[data[i]]
+                if(state.data.elemData.props.style[data[i]]){
+                    one[data[i]] = state.data.elemData.props.style[data[i]]
+                }else{
+                    switch(data[i]){
+                        case 'box-shadow-x':
+                        case 'box-shadow-y':
+                        case 'box-shadow-blur':
+                            one[data[i]] = 0
+                            break
+                        case 'box-shadow':
+                            one[data[i]] = 'none'
+                            break
+                        case 'box-shadow-color':
+                        case 'color':
+                        case 'background-color':
+                            one[data[i]] = 'transparent'
+                            break
+                        case 'image':
+                            one[data[i]] = ''
+                            break
+                    }
+                }
             }
             one.type = payload.type
             switch(payload.mold){
