@@ -8,7 +8,7 @@
         kitty-image 
         >
         <div class="kitty-image-content" rotate :style="props.rotate">
-            <img class="yh-image" :src="props.src" :style="props.style" />
+            <img class="yh-image" :src="props.src" :style="props.style"  yh-states />
             <a :class="{'yh-image-href':props.href}" :href="props.href"></a>
         </div>
         <yh-edit :props="style" :mold="'src'" :without="without"></yh-edit>

@@ -5,8 +5,8 @@
         @mouseleave.stop.prevent="hideEditLayer"
         kitty-audio 
         >
-        <div class="kitty-audio-content">
-            <img class="yh-image" :src="props.src" :style="props.style" rotate />
+        <div class="kitty-audio-content"  rotate :style="props.rotate">
+            <img class="yh-image" :src="props.src" :style="props.style" yh-states />
             <a :class="{'yh-image-href':props.href}" :href="props.href"></a>
         </div>
         <!--<yh-edit :props="style"></yh-edit>

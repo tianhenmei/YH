@@ -8,11 +8,12 @@
             @input="contentChange">
             <div class="yh-button" 
                 :src="props.src" 
-                :style="props.style" v-html="props.content"></div>
+                :style="props.style" v-html="props.content" yh-states></div>
             <a :class="{'yh-button-href':props.href}" :href="props.href" target="_blank"></a>
         </div>
         <yh-edit 
-            :props="props.style" 
+            :props="props.style"
+            :states="props.states"
             :mold="'bg'"
             @setChangeStatus="setChangeStatus"
         ></yh-edit>

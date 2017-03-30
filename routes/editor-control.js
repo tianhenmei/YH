@@ -154,29 +154,35 @@ function setFile(page){
     writeFile('publish/'+page.name+'/index.html',writeHTML(page.html.replace(/(http:\/\/localhost:9000\/)/g,'/')))
 }
 
-function concat(fileIn,fileOut,animation){
+function concat(fileIn,fileOut,data){
     var fileArray = Array.isArray(fileIn)? fileIn : [fileIn],
         origCode,
         ast,
         finalCode='';
     for(var i = 0; i < fileArray.length; i++) {
         origCode = fs.readFileSync('./publish/base/js/'+fileArray[i]+'.js', 'utf8');
+        switch(fileArray[i]){
+            case 'state':
+                finalCode += 'var elementStates = '+JSON.stringify(data.elementsStates)+';\n'
+                break
+        }
         // ast = uglify.parser.parse(origCode);
         // ast = uglify.uglify.ast_mangle(ast);
         // ast = uglify.uglify.ast_squeeze(ast); 
         finalCode += origCode + '\n\n\n\n\n\n\n\n';//';' + uglify.uglify.gen_code(ast);
     }
-    finalCode += 'var PM = new PageMove({animation:"'+animation+'"});'
+    finalCode += 'var PM = new PageMove({animation:"'+data.pageAnimation+'"});'
     fs.writeFileSync(fileOut, finalCode, 'utf8');
 }
 
 function writeJS(data,path){
     // uglify
     // child_process.exec(cmd, [options], callback)
-    let jsList = ['page','event']
+    let jsList = ['page','event','state']
     jsList = jsList.concat(data.eventList)
     console.log(jsList)
-    concat(jsList,path,data.pageAnimation);  // ,'./publish/base/js/bgmusic.js'
+    // console.log(data.elementsStates)
+    concat(jsList,path,data);  // ,'./publish/base/js/bgmusic.js'
     
     child_process.exec('npm run compile -- --dir test',function(){
         console.log('node编译完成')

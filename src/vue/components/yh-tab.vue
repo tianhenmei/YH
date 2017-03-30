@@ -8,7 +8,7 @@
              <div v-for="(tab,index) in props.base.tabs"
                 class="yh-tab-one"
                 :class="active == index ? 'yh-tab-active' : ''"
-                :style="props.style"
+                :style="props.style"  yh-states
                 @touchstart.stop.prevent="changeTab"
                 @mousedown.stop.prevent="changeTab">{{tab.title}}</div>
         </div>

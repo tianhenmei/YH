@@ -131,7 +131,8 @@
 .yh-edit-layer div.yh-edit-tab {
     width: 100%;
     /*height: auto;*/
-    height: 104px;
+    /*height: 104px;*/
+    height: 180px;
     position:relative;
     /*overflow: hidden;*/
 }

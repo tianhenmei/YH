@@ -24,7 +24,7 @@
         components:{
             'yh-edit-input':YHEditInput,
         },
-        props:['options'],
+        props:['options','type'],
         data(){
             let name = this.options.mold ? this.options.mold : ''
             return {
@@ -75,6 +75,8 @@
                     this.$emit('setValue',name,value,value)
                 }else{
                     this.$store.commit('setValue',{
+                        parent:this.type ? this.type.parent : 'style',
+                        index:this.type ? this.type.index : -1,
                         stylename:name,
                         actualValue:value,
                         designValue:value

@@ -752,6 +752,24 @@
                             'transform':'none'
                         }
                     }
+                    if(!elements[j].props.states){
+                        elements[j].props.states = []
+                    }else{
+                        for(let i = 0; i < elements[j].props.states.length; i++){
+                            switch(elements[j].props.states[i].type){
+                                case 'active':
+                                    if(!elements[j].props.states[i]['yh-number']){
+                                        elements[j].props.states[i]['yh-number'] = '1'
+                                    }
+                                    break
+                                case 'invalid':
+                                    if(!elements[j].props.states[i]['yh-valid-type']){
+                                        elements[j].props.states[i]['yh-valid-type'] = 'stylechange'
+                                    }
+                                    break
+                            }
+                        }
+                    }
                     switch(elements[j].module){
                         case 'image':
                             elements[j].yh_module = YHImage;
@@ -803,28 +821,63 @@
                         }else{
                             self.$store.commit('create')
                         }
-                        // MW.bus.$emit('setPages',pages)
-                        // var data = JSON.parse(result.content.json);
-                        // self.pages = [];
-                        // self.count = data.count;
-                        // self.eventList = data.eventList
-                        // for(let i = 0; i < data.pages.length; i++){
-                        //     self.pages.push(JSON.parse(JSON.stringify(data.pages[i])));
-                        //     self.recoveryPage(self,self.pages[i].elements)
-                        // }
-                        // self.$store.commit('init',self.pages)
-                        // MW.bus.$emit('setPages',self.pages)
                     },
                     error:function(error){
                         console.log(error.message);
                     }
                 })
             },
-            changePageDataSave(elements){
+            changePageDataSave(elements,elementsStates){
+                let states = null,
+                    classname = '',
+                    statesStyle = '',
+                    style = ''
                 for(let j = 0; j < elements.length; j++){
                     elements[j].yh_module = null;
                     if(elements[j].props.classname){
                         elements[j].props.classname = document.getElementById(elements[j].yh_id).className.replace('setting','');
+                    }
+                    if(elements[j].props.states.length > 0){
+                        elementsStates[elements[j].yh_id] = []
+                    }
+                    for(let i = 0; i < elements[j].props.states.length; i++){
+                        states = JSON.parse(JSON.stringify(elements[j].props.states[i]))
+                        classname = elements[j].yh_id+'-states'+i
+                        
+                        elementsStates[elements[j].yh_id].push({
+                            type:states.type,
+                            classname:classname
+                        })
+                        switch(states.type){
+                            case 'active':
+                                elementsStates[elements[j].yh_id][i]['yh-number'] = states['yh-number']
+                                break
+                            case 'invalid':
+                                elementsStates[elements[j].yh_id][i]['yh-valid-start'] = states['yh-valid-start']
+                                elementsStates[elements[j].yh_id][i]['yh-valid-end'] = states['yh-valid-end']
+                                elementsStates[elements[j].yh_id][i]['yh-valid-type'] = states['yh-valid-type']
+                                break
+                        }
+                        style = '.'+classname+'{'
+                        for(let attr in states){
+                            switch(attr){
+                                case 'type':
+                                case 'box-shadow-x':
+                                case 'box-shadow-y':
+                                case 'box-shadow-blur':
+                                case 'box-shadow-color':
+                                case 'yh-valid-start':
+                                case 'yh-valid-end':
+                                case 'yh-valid-type':
+                                case 'yh-number':
+                                    break
+                                default:
+                                    style += attr+':'+states[attr]+'; '
+                                    break
+                            }
+                        }
+                        style += '}'
+                        statesStyle += style
                     }
                     switch(elements[j].module){
                         case 'text':
@@ -832,11 +885,12 @@
                             break
                         case 'tab':
                             for(let p = 0; p < elements[j].props.base.tabs.length; p++){
-                                this.changePageDataSave(elements[j].props.base.tabs[p].elements)
+                                statesStyle += this.changePageDataSave(elements[j].props.base.tabs[p].elements,elementsStates)
                             }
                             break
                     }
                 }
+                return statesStyle
             },
             savePage(){
                 var totalElement = $('.yh-content-center').clone()
@@ -854,7 +908,9 @@
                 }
                 totalElement.children('.page').addClass('hide')
                 totalElement.children('.page0').removeClass('hide')
-                var data = {};
+                let data = {},
+                    elementsStates = {},
+                    statesStyle = ''
                 for(let attr in this.$data){
                     switch(attr){
                         case 'pages':
@@ -869,7 +925,7 @@
                 data.pages = [];
                 for(let i = 0; i < this.$store.state.pages.length; i++){
                     data.pages.push(JSON.parse(JSON.stringify(this.$store.state.pages[i])));
-                    this.changePageDataSave(data.pages[i].elements)
+                    statesStyle += this.changePageDataSave(data.pages[i].elements,elementsStates)
                 }
                 $.ajax({
                     type:'post',
@@ -877,12 +933,13 @@
                     data:{
                         id:10002,
                         name:'test',
-                        style:style,
+                        style:style+statesStyle,
                         html:totalElement.html().replace(/\'/g,'‘'),
                         json:JSON.stringify(data).replace(/\'/g,'‘').replace(/(url\(\")/g,'url\(').replace(/(\"\))/g,')'),
                         js:JSON.stringify({
                             pageAnimation:this.pageAnimation,
-                            eventList:this.eventList
+                            eventList:this.eventList,
+                            elementsStates:elementsStates
                         }),
                         author:'yh'
                     },

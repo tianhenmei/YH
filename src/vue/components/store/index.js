@@ -27,7 +27,8 @@ let store = new Vuex.Store({
             tabIndex:-1,
             oindex:-1,
             parentData:null,
-            elemData:null
+            elemData:null,
+            time:''  // 临时时间
         }
     },
     mutations:{
@@ -186,7 +187,11 @@ let store = new Vuex.Store({
         },
         setValue:(state,payload) => {
             store.commit('getData')
-            state.data.elemData.props.style[payload.stylename] = payload.actualValue
+            if(payload.index == -1 || payload.index == undefined){
+                state.data.elemData.props[payload.parent][payload.stylename] = payload.actualValue
+            }else{
+                state.data.elemData.props[payload.parent][payload.index][payload.stylename] = payload.actualValue
+            }
             store.commit('reinitData')
         },
         /**************
@@ -210,6 +215,63 @@ let store = new Vuex.Store({
                 }
             }
             store.commit('reinitData')
+        },
+        addElementStates:(state,type) => {
+            store.commit('getData')
+            let i = 0,
+                data = ['box-shadow','box-shadow-x','box-shadow-y',
+                        'box-shadow-blur','box-shadow-color',
+                        'color','background-color','image'],
+                one = {}
+            if(!state.data.elemData.props.states){
+                state.data.elemData.props.states = [];
+            }
+            for(i = 0; i < data.length; i++){
+                one[data[i]] = state.data.elemData.props.style[data[i]]
+            }
+            one.type = type
+            switch(type){
+                case 'active':
+                    one['yh-number'] = '1'
+                    break
+                case 'invalid':
+                    let now = new Date(),
+                        future = new Date()
+                    future.setDate(future.getDate()+30)
+                    store.commit('timeFormat',{
+                        now:now,
+                        format:'yyyy/MM/dd hh:mm:ss'
+                    })
+                    one['yh-valid-start'] = state.data.time
+                    store.commit('timeFormat',{
+                        now:future,
+                        format:'yyyy/MM/dd hh:mm:ss'
+                    })
+                    one['yh-valid-end'] = state.data.time
+                    one['yh-valid-type'] = 'stylechange'
+                    break
+            }
+            state.data.elemData.props.states.push(one)
+            store.commit('reinitData')
+        },
+        timeFormat:(state,payload) => {
+            let o = {
+                'y+':payload.now.getFullYear(),
+                'M+':payload.now.getMonth() + 1,
+                'd+':payload.now.getDate(),
+                'h+':payload.now.getHours(),
+                'm+':payload.now.getMinutes() + 1,
+                's+':payload.now.getSeconds()
+            }
+            if(/(y+)/i.test(payload.format)) { 
+                payload.format = payload.format.replace(RegExp.$1, (o['y+']+"").substr(4 - RegExp.$1.length));
+            }
+            for(var k in o) { 
+                if(new RegExp("("+ k +")").test(payload.format)) { 
+                    payload.format = payload.format.replace(RegExp.$1, RegExp.$1.length==1 ? o[k] : ("00"+ o[k]).substr((""+ o[k]).length));
+                } 
+            }
+            state.data.time = payload.format
         },
         removeElement:(state,elemID) => {
             store.commit('getData')

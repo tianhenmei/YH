@@ -37,7 +37,7 @@
 <script>
     import {mapState} from 'vuex'
     export default {
-        props:['options'],
+        props:['options','type'],
         data(){
             return {
                 value:0
@@ -77,7 +77,16 @@
                 this.value = svalue
                 list.hide()
                 
-                this.$emit('setValue',this.options.stylename,value+this.options.realunit,svalue+this.options.unit)
+                if(this.type){
+                    this.$emit('setValue',
+                        this.options.stylename,
+                        value+this.options.realunit,
+                        svalue+this.options.unit,
+                        this.type.index
+                    )
+                }else{
+                    this.$emit('setValue',this.options.stylename,value+this.options.realunit,svalue+this.options.unit)
+                }
             }
         }
     }

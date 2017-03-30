@@ -33,7 +33,7 @@
         data(){
             return {}
         },
-        props:['options'],
+        props:['options','type'],
         computed:mapState({
             getDesignValue(state){
                 let actualValue = this.options.style[this.options.stylename]
@@ -65,13 +65,22 @@
                 // actualValue : 实际上使用的值
                 // value : 展示用的值 （designValue）
                 // this.$emit('setValue',stylename,actualValue,value)
-                this.$store.commit('setValue',{
-                    stylename:stylename,
-                    actualValue:actualValue,
-                    designValue:value
-                })
-                if(this.options.backstatus){
-                    this.$emit('setValue',stylename,actualValue,value)
+                if(this.type){
+                    this.$emit('setValue',
+                        stylename,
+                        actualValue,
+                        value,
+                        this.type.index
+                    )
+                }else{
+                    this.$store.commit('setValue',{
+                        stylename:stylename,
+                        actualValue:actualValue,
+                        designValue:value
+                    })
+                    if(this.options.backstatus){
+                        this.$emit('setValue',stylename,actualValue,value)
+                    }
                 }
             }
         }

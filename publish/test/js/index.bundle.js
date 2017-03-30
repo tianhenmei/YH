@@ -208,6 +208,60 @@ function initYHEvent() {
     }
 }
 
+var elementStates = { "element35": [{ "type": "active", "classname": "element35-states0", "yh-number": "N" }, { "type": "invalid", "classname": "element35-states1", "yh-valid-start": "2017/03/30 14:54:05", "yh-valid-end": "2017/03/30 15:18:05", "yh-valid-type": "stylechange" }] };
+console.log(elementStates);
+initElementStatesEvent();
+function initElementStatesEvent() {
+    for (var id in elementStates) {
+        for (var i = 0; i < elementStates[id].length; i++) {
+            setELementState(elementStates[id][i], id);
+        }
+    }
+}
+function setELementState(elementState, id) {
+    switch (elementState.type) {
+        case 'active':
+            (function (classname, yhnumber) {
+                $('#' + id + ' [yh-states]').on('click', function (e) {
+                    if ($(this).hasClass('yh-invalid')) {
+                        return;
+                    }
+                    switch (yhnumber) {
+                        case '1':
+                            if (!$(this).hasClass(classname)) {
+                                $(this).addClass(classname);
+                            }
+                            break;
+                        case 'N':
+                            if ($(this).hasClass(classname)) {
+                                $(this).removeClass(classname);
+                            } else {
+                                $(this).addClass(classname);
+                            }
+                            break;
+                    }
+                });
+            })(elementState.classname, elementState['yh-number']);
+            break;
+        case 'invalid':
+            var now = new Date().getTime(),
+                start = new Date(elementState['yh-valid-start']).getTime(),
+                end = new Date(elementState['yh-valid-end']).getTime();
+            if (now < start || now > end) {
+                switch (elementState['yh-valid-type']) {
+                    case "stylechange":
+                        $('#' + id + ' [yh-states]').addClass(elementState.classname + ' yh-invalid');
+                        break;
+                    case "hide":
+                        $('#' + id).hide();
+                        $('#' + id + ' [yh-states]').addClass('yh-invalid');
+                        break;
+                }
+            }
+            break;
+    }
+}
+
 initTabEvent();
 function initTabEvent() {
     $('[yh-tab-title]').on('touchstart', '> .yh-tab-one', function (e) {

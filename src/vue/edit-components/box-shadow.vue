@@ -17,7 +17,7 @@
             'yh-edit-input':YHEditInput,
             'yh-edit-color':YHEditColor
         },
-        props:['options'],
+        props:['options','type'],
         data(){
             return {
                 list:{
@@ -98,6 +98,8 @@
                     this.options['box-shadow-color']
                 
                 this.$store.commit('setValue',{
+                    parent:this.type ? this.type.parent : 'style',
+                    index:this.type ? this.type.index : -1,
                     stylename:'box-shadow',
                     actualValue:last,
                     designValue:last

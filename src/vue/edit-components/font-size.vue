@@ -30,6 +30,8 @@
             setValue(name,actualValue,designValue){
                 let stylename = 'font-size'
                 this.$store.commit('setValue',{
+                    parent:this.type ? this.type.parent : 'style',
+                    index:this.type ? this.type.index : -1,
                     stylename:stylename,
                     actualValue:actualValue,
                     designValue:designValue

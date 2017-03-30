@@ -6,7 +6,7 @@
 <script>
     import MW from '../components/bus.js'
     export default {
-        props:['options'],
+        props:['options','type'],
         data(){
             return {
 
@@ -51,17 +51,20 @@
                     src = MW.host+data.path
                 yhcontent.addSettingBox(elem)
                 self.$store.commit('setMultipleValue',[{
-                    parent:'style',
+                    parent:this.type ? this.type.parent : 'style',
+                    index:this.type ? this.type.index : -1,
                     stylename:'width',
                     actualValue:data.width / (750 / 16)+'rem',
                     designValue:data.width+'px'
                 },{
-                    parent:'style',
+                    parent:this.type ? this.type.parent : 'style',
+                    index:this.type ? this.type.index : -1,
                     stylename:'height',
                     actualValue:data.height / (750 / 16)+'rem',
                     designValue:data.height+'px'
                 },{
-                    parent:'',
+                    parent:this.type ? this.type.parent : '',
+                    index:this.type ? this.type.index : -1,
                     stylename:'src',
                     actualValue:src,
                     designValue:src
@@ -74,22 +77,26 @@
 
                 yhcontent.addSettingBox(elem)
                 self.$store.commit('setMultipleValue',[{
-                    parent:'style',
+                    parent:this.type ? this.type.parent : 'style',
+                    index:this.type ? this.type.index : -1,
                     stylename:'backgroundImage',
                     actualValue:url,
                     designValue:url
                 },{
-                    parent:'style',
+                    parent:this.type ? this.type.parent : 'style',
+                    index:this.type ? this.type.index : -1,
                     stylename:'backgroundSize',
                     actualValue:'100% 100%',
                     designValue:'100% 100%'
                 },{
-                    parent:'style',
+                    parent:this.type ? this.type.parent : 'style',
+                    index:this.type ? this.type.index : -1,
                     stylename:'width',
                     actualValue:data.width / (750 / 16)+'rem',
                     designValue:data.width+'px'
                 },{
-                    parent:'style',
+                    parent:this.type ? this.type.parent : 'style',
+                    index:this.type ? this.type.index : -1,
                     stylename:'height',
                     actualValue:data.height / (750 / 16)+'rem',
                     designValue:data.height+'px'
