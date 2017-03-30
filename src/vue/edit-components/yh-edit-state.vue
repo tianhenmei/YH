@@ -1,9 +1,10 @@
 <template>
     <div class="yh-edit-state clearfix">
         <div v-for="(one,index) in props" class="yh-edit-state-one">
-            <div class="yh-state-one-title clearfix" @click.stop="slidedownList">
+            <div class="yh-state-one-title clearfix" @click.stop="slidedownList" :index="index">
                 <div class="yh-state-one-arrow"></div>
                 <div class="yh-state-one-type">{{ getStateType(one.type) }}</div>
+                <div class="yh-state-one-remove" @click.stop="removeState">x</div>
             </div>
             <div class="yh-state-one-list clearfix">
                 <yh-edit-options v-if="one.type == 'active'" 
@@ -44,7 +45,7 @@
                     :type="{parent:'states',index:index}"></box-shadow>
             </div>
         </div>
-        <div class="yh-edit-state-add">
+        <div v-if="props.length < 2" class="yh-edit-state-add">
             <yh-edit-options :options="optionsData" @setValue="setValue"></yh-edit-options>
             <div class="yh-state-add" @click.stop.prevent="addState">添加状态</div>
         </div>
@@ -137,15 +138,20 @@
                         break
                 }
             },
+            removeState(e){
+                let one = $(e.target).closest('.yh-state-one-title'),
+                    index = parseInt(one.attr('index'))
+                this.$store.commit('removeElementState',index)
+            },
             slidedownList(e){
-                let one = $(e.target).closest('.yh-edit-state-one')
+                let one = $(e.target).closest('.yh-edit-state-one'),
+                    other = one.siblings('.yh-edit-state-one')
                 if(one.hasClass('yh-edit-state-active')){
                     one.removeClass('yh-edit-state-active')
                 }else{
-                    let other = one.siblings('.yh-edit-state-one').find('.yh-state-one-title')
                     one.addClass('yh-edit-state-active')
-                    other.removeClass('yh-edit-state-active')
                 }
+                other.removeClass('yh-edit-state-active')
             },
             getStateType(type){
                 let index = this.optionsData.realList.indexOf(type)
@@ -274,6 +280,18 @@
         font-size:14px;
         color:#ff0084;
         text-align:left;
+        float:left;
+    }
+    .yh-state-one-title .yh-state-one-remove{
+        width:15px;
+        height:15px;
+        line-height:15px;
+        margin:0 0 0 15px;
+        border:1px solid #ff0084;
+        border-radius:15px;
+        font-size:14px;
+        color:#ff0084;
+        text-align:center;
         float:left;
     }
     .yh-state-one-list{

@@ -293,6 +293,11 @@ let store = new Vuex.Store({
             state.data.elemData.props.states.push(one)
             store.commit('reinitData')
         },
+        removeElementState:(state,index) => {
+            store.commit('getData')
+            state.data.elemData.props.states.splice(index,1)
+            store.commit('reinitData')
+        },
         timeFormat:(state,payload) => {
             let o = {
                 'y+':payload.now.getFullYear(),
@@ -315,6 +320,7 @@ let store = new Vuex.Store({
         removeElement:(state,elemID) => {
             store.commit('getData')
             state.data.parentData.splice(state.data.index,1)
+            store.commit('reinitData')
         }
     },
     actions:{

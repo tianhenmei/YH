@@ -208,7 +208,7 @@ function initYHEvent() {
     }
 }
 
-var elementStates = { "element34": [{ "type": "active", "classname": "element34-states0", "yh-number": "1", "yh-src": "http://localhost:9000/static/files/Yujb2l3kf-icri93Ove3_DzN.png" }], "element35": [{ "type": "active", "classname": "element35-states0", "yh-number": "N" }, { "type": "invalid", "classname": "element35-states1", "yh-valid-start": "2017/03/30 14:54:05", "yh-valid-end": "2017/03/30 15:18:05", "yh-valid-type": "stylechange" }], "element53": [{ "type": "active", "classname": "element53-states0", "yh-number": "N", "yh-src": "http://localhost:9000/static/files/3F4MjQF8_2Nqv-zlu6Ot9Z3I.png" }], "element54": [{ "type": "active", "classname": "element54-states0", "yh-number": "1" }] };
+var elementStates = { "element34": [{ "type": "active", "classname": "element34-states0", "yh-number": "1", "yh-src": "http://localhost:9000/static/files/Yujb2l3kf-icri93Ove3_DzN.png" }], "element35": [{ "type": "active", "classname": "element35-states0", "yh-number": "N" }], "element53": [{ "type": "active", "classname": "element53-states0", "yh-number": "N", "yh-src": "http://localhost:9000/static/files/3F4MjQF8_2Nqv-zlu6Ot9Z3I.png" }], "element54": [{ "type": "active", "classname": "element54-states0", "yh-number": "1" }] };
 console.log(elementStates);
 initElementStatesEvent();
 function initElementStatesEvent() {
