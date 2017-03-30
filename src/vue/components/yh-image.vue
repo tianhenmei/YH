@@ -11,7 +11,7 @@
             <img class="yh-image" :src="props.src" :style="props.style"  yh-states />
             <a :class="{'yh-image-href':props.href}" :href="props.href"></a>
         </div>
-        <yh-edit :props="style" :mold="'src'" :without="without"></yh-edit>
+        <yh-edit :props="style" :mold="'src'" :without="without" :states="props.states"></yh-edit>
     </div>
 </template>
 <script>
@@ -22,6 +22,7 @@
         components:{
             'yh-edit':YHEdit
         },
+        props:['props'],
         data(){
             return Object.assign({
                 style:{
@@ -49,7 +50,6 @@
                 }
             })
         },
-        props:['props'],
         methods:{
             getRem(value){
                 return value / (750 / 16) + 'rem';
@@ -96,6 +96,7 @@
                     '-webkit-transform':'none',
                     transform:'none'
                 },
+                states:[],
                 src:options.src ? options.src : 'http://localhost:9000/static/images/image.png',
                 href:options.href ? options.href : '',
                 classname:options.classname ? options.classname : ''

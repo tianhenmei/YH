@@ -205,18 +205,28 @@ let store = new Vuex.Store({
             store.commit('getData')
             let i = 0
             for(i = 0; i < payload.length; i++){
-                if(payload[i].parent){
-                    if(!state.data.elemData.props[payload[i].parent]){
-                        state.data.elemData.props[payload[i].parent] = {}
-                    }
-                    state.data.elemData.props[payload[i].parent][payload[i].stylename] = payload[i].actualValue
-                }else{
-                    state.data.elemData.props[payload[i].stylename] = payload[i].actualValue
+                switch(payload[i].parent){
+                    case 'states':
+                        if(!state.data.elemData.props[payload[i].parent]){
+                            state.data.elemData.props[payload[i].parent] = {}
+                        }
+                        state.data.elemData.props[payload[i].parent][payload[i].index][payload[i].stylename] = payload[i].actualValue
+                        break
+                    case 'style':
+                    case 'position':
+                        if(!state.data.elemData.props[payload[i].parent]){
+                            state.data.elemData.props[payload[i].parent] = {}
+                        }
+                        state.data.elemData.props[payload[i].parent][payload[i].stylename] = payload[i].actualValue
+                        break
+                    default:
+                        state.data.elemData.props[payload[i].stylename] = payload[i].actualValue
+                        break
                 }
             }
             store.commit('reinitData')
         },
-        addElementStates:(state,type) => {
+        addElementStates:(state,payload) => {
             store.commit('getData')
             let i = 0,
                 data = ['box-shadow','box-shadow-x','box-shadow-y',
@@ -229,8 +239,16 @@ let store = new Vuex.Store({
             for(i = 0; i < data.length; i++){
                 one[data[i]] = state.data.elemData.props.style[data[i]]
             }
-            one.type = type
-            switch(type){
+            one.type = payload.type
+            switch(payload.mold){
+                case 'src':
+                    one['yh-src'] = ''
+                    break
+                case 'bg':
+                    one['background-image'] = ''
+                    break
+            }
+            switch(payload.type){
                 case 'active':
                     one['yh-number'] = '1'
                     break

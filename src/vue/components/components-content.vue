@@ -858,6 +858,9 @@
                                 elementsStates[elements[j].yh_id][i]['yh-valid-type'] = states['yh-valid-type']
                                 break
                         }
+                        if(states['yh-src']){
+                            elementsStates[elements[j].yh_id][i]['yh-src'] = states['yh-src']
+                        }
                         style = '.'+classname+'{'
                         for(let attr in states){
                             switch(attr){
@@ -870,6 +873,12 @@
                                 case 'yh-valid-end':
                                 case 'yh-valid-type':
                                 case 'yh-number':
+                                case 'yh-src':
+                                    break
+                                case 'background-image':
+                                    if(states[attr]){
+                                        style += attr+':'+states[attr]+'; '
+                                    }
                                     break
                                 default:
                                     style += attr+':'+states[attr]+'; '

@@ -208,7 +208,7 @@ function initYHEvent() {
     }
 }
 
-var elementStates = { "element35": [{ "type": "active", "classname": "element35-states0", "yh-number": "N" }, { "type": "invalid", "classname": "element35-states1", "yh-valid-start": "2017/03/30 14:54:05", "yh-valid-end": "2017/03/30 15:18:05", "yh-valid-type": "stylechange" }] };
+var elementStates = { "element34": [{ "type": "active", "classname": "element34-states0", "yh-number": "1", "yh-src": "http://localhost:9000/static/files/Yujb2l3kf-icri93Ove3_DzN.png" }], "element35": [{ "type": "active", "classname": "element35-states0", "yh-number": "N" }, { "type": "invalid", "classname": "element35-states1", "yh-valid-start": "2017/03/30 14:54:05", "yh-valid-end": "2017/03/30 15:18:05", "yh-valid-type": "stylechange" }], "element53": [{ "type": "active", "classname": "element53-states0", "yh-number": "N", "yh-src": "http://localhost:9000/static/files/3F4MjQF8_2Nqv-zlu6Ot9Z3I.png" }], "element54": [{ "type": "active", "classname": "element54-states0", "yh-number": "1" }] };
 console.log(elementStates);
 initElementStatesEvent();
 function initElementStatesEvent() {
@@ -221,8 +221,12 @@ function initElementStatesEvent() {
 function setELementState(elementState, id) {
     switch (elementState.type) {
         case 'active':
-            (function (classname, yhnumber) {
-                $('#' + id + ' [yh-states]').on('click', function (e) {
+            (function (classname, yhnumber, src) {
+                var current = $('#' + id + ' [yh-states]');
+                if (src) {
+                    current.attr('yh-old-src', current.attr('src'));
+                }
+                current.on('click', function (e) {
                     if ($(this).hasClass('yh-invalid')) {
                         return;
                     }
@@ -230,31 +234,44 @@ function setELementState(elementState, id) {
                         case '1':
                             if (!$(this).hasClass(classname)) {
                                 $(this).addClass(classname);
+                                if (src) {
+                                    $(this).attr('src', src);
+                                }
                             }
                             break;
                         case 'N':
                             if ($(this).hasClass(classname)) {
                                 $(this).removeClass(classname);
+                                if (src) {
+                                    $(this).attr('src', $(this).attr('yh-old-src'));
+                                }
                             } else {
                                 $(this).addClass(classname);
+                                if (src) {
+                                    $(this).attr('src', src);
+                                }
                             }
                             break;
                     }
                 });
-            })(elementState.classname, elementState['yh-number']);
+            })(elementState.classname, elementState['yh-number'], elementState['yh-src']);
             break;
         case 'invalid':
             var now = new Date().getTime(),
                 start = new Date(elementState['yh-valid-start']).getTime(),
-                end = new Date(elementState['yh-valid-end']).getTime();
+                end = new Date(elementState['yh-valid-end']).getTime(),
+                current = $('#' + id + ' [yh-states]');
             if (now < start || now > end) {
                 switch (elementState['yh-valid-type']) {
                     case "stylechange":
-                        $('#' + id + ' [yh-states]').addClass(elementState.classname + ' yh-invalid');
+                        current.addClass(elementState.classname + ' yh-invalid');
+                        if (elementState['yh-src']) {
+                            current.attr('src', elementState['yh-src']);
+                        }
                         break;
                     case "hide":
                         $('#' + id).hide();
-                        $('#' + id + ' [yh-states]').addClass('yh-invalid');
+                        current.addClass('yh-invalid');
                         break;
                 }
             }

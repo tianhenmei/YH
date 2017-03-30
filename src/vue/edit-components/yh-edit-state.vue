@@ -118,19 +118,21 @@
                         alert("* 请先选择添加的状态类型！")
                         break
                     default:
-                        if(this.states){
-                            for(i = 0; i < this.states.length; i++){
-                                if(this.states[i].type == state){
+                        if(this.props){
+                            for(i = 0; i < this.props.length; i++){
+                                if(this.props[i].type == state){
                                     isdefined = true
                                     break
                                 }
                             }
                         }
-                        console.log(this.states)
                         if(isdefined){
                             alert("* 不能设置多个同种状态！")
                         }else{
-                            this.$store.commit('addElementStates',state)
+                            this.$store.commit('addElementStates',{
+                                type:state,
+                                mold:this.mold
+                            })
                         }
                         break
                 }

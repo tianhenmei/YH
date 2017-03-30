@@ -29,14 +29,36 @@
                         processData: false,  
                         contentType: false,
                         success(data){
-                            var name = that.attributes['mold'].value
-                            switch(name){
-                                case 'src':
-                                    self.imageChange(self,data.content)
-                                    break
-                                case 'bg':
-                                    self.setBackgroundImage(self,data.content,'yh-button')
-                                    break
+                            let name = that.attributes['mold'].value,
+                                stylename = '',
+                                value = ''
+                            if(self.type){
+                                switch(name){
+                                    case 'src':
+                                        stylename = 'yh-src'
+                                        value = MW.host+data.content.path
+                                        break
+                                    case 'bg':
+                                        stylename = 'background-image'
+                                        value = "url("+MW.host+data.content.path+")"
+                                        break
+                                }
+                                self.$store.commit('setValue',{
+                                    parent:self.type.parent,
+                                    index:self.type.index,
+                                    stylename:stylename,
+                                    actualValue:value,
+                                    designValue:value
+                                })
+                            }else{
+                                switch(name){
+                                    case 'src':
+                                        self.imageChange(self,data.content)
+                                        break
+                                    case 'bg':
+                                        self.setBackgroundImage(self,data.content,'yh-button')
+                                        break
+                                }
                             }
                         },
                         error(error){

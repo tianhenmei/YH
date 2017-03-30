@@ -131,6 +131,7 @@
                     '-webkit-transform':'none',
                     transform:'none'
                 },
+                states:[],
                 content:'我是按钮',
                 href:options.href ? options.href : '',
                 'event-type':options['event-type'] ? options['event-type'] : '无',
